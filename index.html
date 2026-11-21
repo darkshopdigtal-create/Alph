@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ألفا ديجيتال | بوابة التوزيع</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: #F7F7F5;
+      color: #141413;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #E6E5E0;
+      border-radius: 10px;
+    }
+    .btn-primary {
+      background: #141413;
+      color: #FFFFFF;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #2C2C2A;
+    }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #FFFFFF;
+      color: #141413;
+      border: 1px solid #DCDAD3;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: #F2F1ED;
+    }
+    .input-field {
+      background: #FFFFFF;
+      border: 1px solid #DCDAD3;
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.9rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .input-field:focus {
+      border-color: #141413;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- LOGIN VIEW -->
+  <div id="loginView" class="flex-1 flex items-center justify-center p-4">
+    <div class="card w-full max-w-sm p-7">
+      <div class="mb-6">
+        <div class="text-xs font-medium text-stone-500 mb-1">ALPHA DIGITAL</div>
+        <h1 class="text-xl font-bold text-stone-900">تسجيل الدخول</h1>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1.5">اسم المستخدم</label>
+          <input id="loginUsername" type="text" required autocomplete="username" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1.5">كلمة المرور</label>
+          <input id="loginPassword" type="password" required autocomplete="current-password" class="input-field" />
+        </div>
+        <div id="loginError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
+        <button id="loginSubmitBtn" type="submit" class="btn-primary w-full py-2.5 text-sm font-medium">
+          دخول
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP VIEW -->
+  <div id="appView" class="hidden flex-1 flex flex-col">
+    <!-- Top Bar -->
+    <header class="bg-white border-b border-stone-200">
+      <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="font-bold text-base tracking-tight">ألفا ديجيتال</span>
+          <span id="roleBadge" class="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-700 border border-stone-200"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="loadState()" class="btn-secondary px-3 py-1.5 text-xs font-medium">تحديث</button>
+          <button onclick="logout()" class="btn-secondary px-3 py-1.5 text-xs font-medium text-red-700">خروج</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-white border-b border-stone-200">
+      <div id="navTabs" class="max-w-5xl mx-auto px-4 flex gap-6 text-sm"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
+      <div id="mainContent"></div>
+    </main>
+  </div>
+
+  <!-- DELIVERY MODAL -->
+  <div id="deliveryModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+    <div class="card w-full max-w-lg p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+        <div>
+          <h3 class="font-bold text-base">تم تنفيذ الطلب بنجاح</h3>
+          <p id="deliveryMeta" class="text-xs text-stone-500 mt-0.5"></p>
+        </div>
+        <button onclick="closeModal('deliveryModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+      </div>
+      <div id="deliveryItemsList" class="space-y-2.5 max-h-72 overflow-y-auto"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-stone-200">
+        <button onclick="copyAllDelivered()" class="btn-secondary px-4 py-2 text-xs font-medium">نسخ الكل</button>
+        <button onclick="closeModal('deliveryModal')" class="btn-primary px-4 py-2 text-xs font-medium">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD STOCK MODAL (ADMIN) -->
+  <div id="stockModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+    <div class="card w-full max-w-lg p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+        <div>
+          <h3 id="stockModalTitle" class="font-bold text-base">إدارة المخزون</h3>
+          <p class="text-xs text-stone-500 mt-0.5">أضف كل حساب في سطر منفصل مع ملاحظة الدفعة</p>
+        </div>
+        <button onclick="closeModal('stockModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1">ملاحظات التسليم لهذه الدفعة (اختياري)</label>
+          <input id="stockBatchNote" type="text" placeholder="مثال: حساب خاص - ضمان 28 يوم - لا تغير الباسورد" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1">الحسابات (سطر لكل حساب)</label>
+          <textarea id="stockAccountsInput" rows="5" placeholder="user1@mail.com:pass123&#10;user2@mail.com:pass456" class="input-field mono text-xs" dir="ltr"></textarea>
+        </div>
+        <button onclick="submitAddStock()" class="btn-primary w-full py-2 text-xs font-medium">حفظ وإضافة للمخزون</button>
+      </div>
+
+      <div class="border-t border-stone-200 pt-3">
+        <div class="text-xs font-semibold text-stone-700 mb-2">المخزون الحالي المتوفر (<span id="currentStockCount">0</span>)</div>
+        <div id="currentStockList" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT FORM MODAL (ADMIN) -->
+  <div id="productModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+    <div class="card w-full max-w-md p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+        <h3 id="productModalTitle" class="font-bold text-base">إضافة منتج</h3>
+        <button onclick="closeModal('productModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+      </div>
+      <div class="space-y-3">
+        <input type="hidden" id="prodIdInput" />
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1">اسم المنتج</label>
+          <input id="prodNameInput" type="text" placeholder="ChatGPT Plus" class="input-field" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-stone-700 mb-1">المدة</label>
+            <input id="prodDurationInput" type="text" placeholder="شهر واحد" class="input-field" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-700 mb-1">السعر ($)</label>
+            <input id="prodPriceInput" type="number" step="0.01" placeholder="14.50" class="input-field mono" dir="ltr" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1">ملاحظة افتراضية للطلبات</label>
+          <input id="prodNoteInput" type="text" placeholder="تظهر عند تسليم الحسابات" class="input-field" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('productModal')" class="btn-secondary px-4 py-2 text-xs font-medium">إلغاء</button>
+        <button onclick="submitProductForm()" class="btn-primary px-4 py-2 text-xs font-medium">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let authToken = sessionStorage.getItem('alpha_token') || '';
+    let currentUser = null;
+    let state = { products: [], orders: [], apiSettings: { enabled: true, apiKey: '' } };
+    let activeTab = 'products';
+    let quantities = {};
+    let activeStockProductId = null;
+    let lastDeliveredItems = [];
+    let revealedOrders = {};
+
+    async function apiRequest(url, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+      const res = await fetch(url, { ...options, headers });
+      const data = await res.json();
+      if (res.status === 401 && url !== '/api/auth/login') {
+        logout();
+        throw new Error('انتهت الجلسة');
+      }
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'حدث خطأ في الطلب');
+      }
+      return data;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('loginError');
+      const btn = document.getElementById('loginSubmitBtn');
+      errBox.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'جاري التحقق...';
+
+      try {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        const data = await apiRequest('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        authToken = data.token;
+        sessionStorage.setItem('alpha_token', authToken);
+        currentUser = data.user;
+        activeTab = currentUser.role === 'admin' ? 'inventory' : 'products';
+        await initApp();
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'دخول';
+      }
+    });
+
+    function logout() {
+      authToken = '';
+      currentUser = null;
+      sessionStorage.removeItem('alpha_token');
+      document.getElementById('appView').classList.add('hidden');
+      document.getElementById('loginView').classList.remove('hidden');
+      document.getElementById('loginPassword').value = '';
+    }
+
+    async function initApp() {
+      try {
+        if (!currentUser && authToken) {
+          const me = await apiRequest('/api/auth/me');
+          currentUser = me.user;
+          activeTab = currentUser.role === 'admin' ? 'inventory' : 'products';
+        }
+        if (!currentUser) return;
+
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+        document.getElementById('roleBadge').textContent = currentUser.role === 'admin' ? 'الإدارة' : 'حساب التاجر';
+        await loadState();
+      } catch (e) {
+        logout();
+      }
+    }
+
+    async function loadState() {
+      const data = await apiRequest('/api/portal/state');
+      state = data;
+      state.products.forEach(p => {
+        if (!quantities[p.id]) quantities[p.id] = 1;
+      });
+      renderTabs();
+      renderContent();
+    }
+
+    function setTab(tab) {
+      activeTab = tab;
+      renderTabs();
+      renderContent();
+    }
+
+    function renderTabs() {
+      const tabs = currentUser.role === 'admin'
+        ? [
+            { id: 'inventory', label: 'المخزون والمنتجات' },
+            { id: 'orders', label: 'سجل الطلبات' },
+            { id: 'settings', label: 'الإعدادات والـ API' }
+          ]
+        : [
+            { id: 'products', label: 'المنتجات والطلب' },
+            { id: 'orders', label: 'سجل الطلبات' },
+            { id: 'api', label: 'الربط البرمجي API' }
+          ];
+
+      document.getElementById('navTabs').innerHTML = tabs.map(t => `
+        <button onclick="setTab('${t.id}')" class="py-3 border-b-2 font-medium transition-colors ${
+          activeTab === t.id
+            ? 'border-stone-900 text-stone-900'
+            : 'border-transparent text-stone-500 hover:text-stone-800'
+        }">${t.label}</button>
+      `).join('');
+    }
+
+    function renderContent() {
+      const container = document.getElementById('mainContent');
+      if (currentUser.role === 'admin') {
+        if (activeTab === 'inventory') container.innerHTML = renderAdminInventory();
+        else if (activeTab === 'orders') container.innerHTML = renderOrdersTable(true);
+        else container.innerHTML = renderAdminSettings();
+      } else {
+        if (activeTab === 'products') container.innerHTML = renderUserProducts();
+        else if (activeTab === 'orders') container.innerHTML = renderOrdersTable(false);
+        else container.innerHTML = renderUserApi();
+      }
+    }
+
+    // --- USER VIEWS ---
+    function changeQty(productId, delta, max) {
+      const next = (quantities[productId] || 1) + delta;
+      if (next >= 1 && next <= Math.max(1, max)) {
+        quantities[productId] = next;
+        renderContent();
+      }
+    }
+
+    async function pullOrder(productId) {
+      const qty = quantities[productId] || 1;
+      try {
+        const res = await apiRequest('/api/portal/orders', {
+          method: 'POST',
+          body: JSON.stringify({ productId, quantity: qty })
+        });
+        quantities[productId] = 1;
+        await loadState();
+        openDeliveryModal(res.order);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function renderUserProducts() {
+      if (!state.products.length) {
+        return `<div class="card p-8 text-center text-sm text-stone-500">لا توجد منتجات مضافة حالياً.</div>`;
+      }
+      return `
+        <div class="card overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+            <h2 class="font-bold text-sm">المنتجات المتوفرة للسحب الفوري</h2>
+            <span class="text-xs text-stone-500">${state.products.length} منتجات</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-right">
+              <thead class="bg-stone-50 text-stone-600 text-xs border-b border-stone-200">
+                <tr>
+                  <th class="py-3 px-5 font-medium">المنتج</th>
+                  <th class="py-3 px-4 font-medium">المدة</th>
+                  <th class="py-3 px-4 font-medium">المتوفر</th>
+                  <th class="py-3 px-4 font-medium">السعر</th>
+                  <th class="py-3 px-4 font-medium">الكمية</th>
+                  <th class="py-3 px-5 font-medium text-left">الإجراء</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-stone-200">
+                ${state.products.map(p => {
+                  const qty = quantities[p.id] || 1;
+                  const outOfStock = p.stockCount === 0;
+                  return `
+                    <tr>
+                      <td class="py-3.5 px-5">
+                        <div class="font-semibold text-stone-900">${escapeHtml(p.name)}</div>
+                        ${p.defaultNote ? `<div class="text-xs text-stone-500 mt-0.5">${escapeHtml(p.defaultNote)}</div>` : ''}
+                      </td>
+                      <td class="py-3.5 px-4 text-stone-600 text-xs">${escapeHtml(p.duration)}</td>
+                      <td class="py-3.5 px-4">
+                        <span class="mono text-xs px-2 py-0.5 rounded ${outOfStock ? 'bg-red-50 text-red-700' : 'bg-stone-100 text-stone-800'}">
+                          ${p.stockCount}
+                        </span>
+                      </td>
+                      <td class="py-3.5 px-4 mono font-medium">$${p.price.toFixed(2)}</td>
+                      <td class="py-3.5 px-4">
+                        <div class="inline-flex items-center border border-stone-300 rounded-md">
+                          <button onclick="changeQty('${p.id}', -1, ${p.stockCount})" class="px-2.5 py-1 text-xs hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>-</button>
+                          <span class="px-2.5 py-1 text-xs mono border-x border-stone-300">${outOfStock ? 0 : qty}</span>
+                          <button onclick="changeQty('${p.id}', 1, ${p.stockCount})" class="px-2.5 py-1 text-xs hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>+</button>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-5 text-left">
+                        <button onclick="pullOrder('${p.id}')" ${outOfStock ? 'disabled' : ''} class="btn-primary px-4 py-1.5 text-xs font-medium">
+                          ${outOfStock ? 'نفد المخزون' : 'سحب فوري'}
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderUserApi() {
+      const baseUrl = window.location.origin;
+      const key = state.apiSettings.apiKey || '';
+      return `
+        <div class="space-y-5">
+          <div class="card p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="font-bold text-sm">بيانات الربط البرمجي (REST API)</h2>
+                <p class="text-xs text-stone-500 mt-0.5">استخدم هذه البيانات لربط متجرك أو نظامك وسحب الحسابات تلقائياً</p>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded ${state.apiSettings.enabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}">
+                ${state.apiSettings.enabled ? 'مفعّل' : 'متوقف'}
+              </span>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">رابط الخادم (Base URL)</label>
+                <div class="flex gap-2">
+                  <input type="text" readonly value="${baseUrl}" class="input-field mono text-xs bg-stone-50" dir="ltr" />
+                  <button onclick="copyText('${baseUrl}')" class="btn-secondary px-3 text-xs">نسخ</button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">مفتاح الربط (Header: x-api-key)</label>
+                <div class="flex gap-2">
+                  <input type="text" readonly value="${key}" class="input-field mono text-xs bg-stone-50" dir="ltr" />
+                  <button onclick="copyText('${key}')" class="btn-secondary px-3 text-xs">نسخ</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-5 space-y-4">
+            <h3 class="font-bold text-sm">نقاط الاتصال (Endpoints)</h3>
+
+            <div class="space-y-2">
+              <div class="text-xs font-semibold text-stone-800">1. جلب المنتجات والمخزون المتوفر</div>
+              <pre class="bg-stone-900 text-stone-100 p-3.5 rounded-lg text-xs mono overflow-x-auto" dir="ltr">GET ${baseUrl}/api/v1/products
+Headers: { "x-api-key": "${key}" }</pre>
+            </div>
+
+            <div class="space-y-2">
+              <div class="text-xs font-semibold text-stone-800">2. إنشاء طلب وسحب الحسابات فوراً</div>
+              <pre class="bg-stone-900 text-stone-100 p-3.5 rounded-lg text-xs mono overflow-x-auto" dir="ltr">POST ${baseUrl}/api/v1/orders
+Headers: {
+  "Content-Type": "application/json",
+  "x-api-key": "${key}"
+}
+Body: {
+  "product_id": "${state.products[0]?.id || 'prod_1'}",
+  "quantity": 1
+}</pre>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- ADMIN VIEWS ---
+    function renderAdminInventory() {
+      return `
+        <div class="card overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+            <div>
+              <h2 class="font-bold text-sm">إدارة المنتجات والمخزون</h2>
+              <p class="text-xs text-stone-500 mt-0.5">أضف الحسابات والملاحظات لكل منتج</p>
+            </div>
+            <button onclick="openProductModal()" class="btn-primary px-3.5 py-2 text-xs font-medium">+ منتج جديد</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-right">
+              <thead class="bg-stone-50 text-stone-600 text-xs border-b border-stone-200">
+                <tr>
+                  <th class="py-3 px-5 font-medium">المنتج</th>
+                  <th class="py-3 px-4 font-medium">المعرّف (API ID)</th>
+                  <th class="py-3 px-4 font-medium">المدة</th>
+                  <th class="py-3 px-4 font-medium">السعر</th>
+                  <th class="py-3 px-4 font-medium">المخزون</th>
+                  <th class="py-3 px-5 font-medium text-left">إدارة</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-stone-200">
+                ${state.products.map(p => `
+                  <tr>
+                    <td class="py-3.5 px-5">
+                      <div class="font-semibold text-stone-900">${escapeHtml(p.name)}</div>
+                      ${p.defaultNote ? `<div class="text-xs text-stone-500 mt-0.5">${escapeHtml(p.defaultNote)}</div>` : ''}
+                    </td>
+                    <td class="py-3.5 px-4 mono text-xs text-stone-500" dir="ltr">${p.id}</td>
+                    <td class="py-3.5 px-4 text-xs text-stone-600">${escapeHtml(p.duration)}</td>
+                    <td class="py-3.5 px-4 mono font-medium">$${p.price.toFixed(2)}</td>
+                    <td class="py-3.5 px-4">
+                      <span class="mono text-xs px-2 py-0.5 rounded ${p.stockCount === 0 ? 'bg-red-50 text-red-700' : 'bg-stone-100 text-stone-800'}">
+                        ${p.stockCount} حساب
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-5 text-left space-x-1 space-x-reverse">
+                      <button onclick="openStockModal('${p.id}')" class="btn-primary px-3 py-1.5 text-xs font-medium">+ المخزون</button>
+                      <button onclick="openProductModal('${p.id}')" class="btn-secondary px-2.5 py-1.5 text-xs">تعديل</button>
+                      <button onclick="deleteProduct('${p.id}')" class="btn-secondary px-2.5 py-1.5 text-xs text-red-700">حذف</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAdminSettings() {
+      const baseUrl = window.location.origin;
+      return `
+        <div class="grid md:grid-cols-2 gap-5">
+          <div class="card p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+              <div>
+                <h3 class="font-bold text-sm">إعدادات الـ API</h3>
+                <p class="text-xs text-stone-500 mt-0.5">التحكم بوصول التاجر للربط البرمجي</p>
+              </div>
+              <button onclick="toggleApiStatus()" class="btn-secondary px-3 py-1.5 text-xs font-medium">
+                ${state.apiSettings.enabled ? 'إيقاف الـ API' : 'تفعيل الـ API'}
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">رابط الـ API الرئيسي</label>
+              <input type="text" readonly value="${baseUrl}/api/v1" class="input-field mono text-xs bg-stone-50" dir="ltr" />
+            </div>
+
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">مفتاح الـ API الحالي</label>
+              <div class="flex gap-2">
+                <input type="text" readonly value="${state.apiSettings.apiKey}" class="input-field mono text-xs bg-stone-50" dir="ltr" />
+                <button onclick="copyText('${state.apiSettings.apiKey}')" class="btn-secondary px-3 text-xs">نسخ</button>
+              </div>
+            </div>
+
+            <button onclick="regenerateApiKey()" class="btn-secondary w-full py-2 text-xs font-medium">توليد مفتاح API جديد</button>
+          </div>
+
+          <div class="card p-5 space-y-4">
+            <div class="border-b border-stone-200 pb-3">
+              <h3 class="font-bold text-sm">تغيير كلمات المرور</h3>
+              <p class="text-xs text-stone-500 mt-0.5">اترك الحقل فارغاً إذا لم ترغب بتغييره</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">كلمة مرور الإدارة الجديدة (admin)</label>
+              <input id="newAdminPass" type="password" class="input-field" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">كلمة مرور التاجر الجديدة (user)</label>
+              <input id="newUserPass" type="password" class="input-field" />
+            </div>
+
+            <button onclick="savePasswords()" class="btn-primary w-full py-2 text-xs font-medium">حفظ كلمات المرور</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- SHARED ORDERS TABLE ---
+    function renderOrdersTable(isAdmin) {
+      const totalAmount = state.orders.reduce((sum, o) => sum + o.totalPrice, 0);
+      return `
+        <div class="card overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="font-bold text-sm">سجل الطلبات المسحوبة (${state.orders.length})</h2>
+              <p class="text-xs text-stone-500 mt-0.5">إجمالي قيمة الطلبات: <span class="mono font-semibold text-stone-900">$${totalAmount.toFixed(2)}</span></p>
+            </div>
+            ${state.orders.length ? `<button onclick="exportOrdersCSV()" class="btn-secondary px-3.5 py-1.5 text-xs font-medium">تصدير CSV</button>` : ''}
+          </div>
+
+          ${!state.orders.length
+            ? `<div class="p-8 text-center text-sm text-stone-500">لا توجد طلبات مسجلة حتى الآن.</div>`
+            : `<div class="overflow-x-auto">
+                <table class="w-full text-sm text-right">
+                  <thead class="bg-stone-50 text-stone-600 text-xs border-b border-stone-200">
+                    <tr>
+                      <th class="py-3 px-4 font-medium">رقم الطلب</th>
+                      <th class="py-3 px-4 font-medium">المنتج</th>
+                      <th class="py-3 px-3 font-medium">الكمية</th>
+                      <th class="py-3 px-3 font-medium">الإجمالي</th>
+                      <th class="py-3 px-3 font-medium">المصدر</th>
+                      <th class="py-3 px-4 font-medium">البيانات والملاحظات</th>
+                      <th class="py-3 px-4 font-medium">التاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-stone-200">
+                    ${state.orders.map(o => {
+                      const shown = !!revealedOrders[o.id];
+                      const dateStr = new Date(o.createdAt).toLocaleString('ar-IQ', { dateStyle: 'short', timeStyle: 'short' });
+                      return `
+                        <tr class="align-top">
+                          <td class="py-3.5 px-4 mono text-xs font-medium">${o.id}</td>
+                          <td class="py-3.5 px-4 font-medium text-stone-900">${escapeHtml(o.productName)}</td>
+                          <td class="py-3.5 px-3 mono text-xs">${o.quantity}</td>
+                          <td class="py-3.5 px-3 mono text-xs font-medium">$${o.totalPrice.toFixed(2)}</td>
+                          <td class="py-3.5 px-3">
+                            <span class="mono text-[11px] px-2 py-0.5 rounded bg-stone-100 border border-stone-200">${o.source}</span>
+                          </td>
+                          <td class="py-3.5 px-4">
+                            <div class="flex items-center gap-2 mb-1.5">
+                              <button onclick="toggleOrderReveal('${o.id}')" class="btn-secondary px-2.5 py-1 text-xs">
+                                ${shown ? 'إخفاء' : 'عرض الحسابات'}
+                              </button>
+                              <button onclick="copyOrderItems('${o.id}')" class="btn-secondary px-2.5 py-1 text-xs">نسخ</button>
+                            </div>
+                            ${shown ? `
+                              <div class="space-y-1.5 mt-2">
+                                ${o.items.map(it => `
+                                  <div class="bg-stone-50 border border-stone-200 rounded p-2 text-xs">
+                                    <div class="mono text-stone-900 select-all" dir="ltr">${escapeHtml(it.account)}</div>
+                                    ${it.note ? `<div class="text-stone-600 mt-1">ملاحظة: ${escapeHtml(it.note)}</div>` : ''}
+                                  </div>
+                                `).join('')}
+                              </div>
+                            ` : ''}
+                          </td>
+                          <td class="py-3.5 px-4 text-xs text-stone-500 whitespace-nowrap">${dateStr}</td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>`
+          }
+        </div>
+      `;
+    }
+
+    // --- MODALS & HELPERS ---
+    function openDeliveryModal(order) {
+      lastDeliveredItems = order.items || [];
+      document.getElementById('deliveryMeta').textContent = `${order.id} • ${order.productName} (×${order.quantity})`;
+      document.getElementById('deliveryItemsList').innerHTML = lastDeliveredItems.map(it => `
+        <div class="bg-stone-50 border border-stone-200 rounded-lg p-3 space-y-1">
+          <div class="flex items-center justify-between gap-2">
+            <code class="mono text-xs text-stone-900 break-all" dir="ltr">${escapeHtml(it.account)}</code>
+            <button onclick="copyText('${escapeJs(it.account)}')" class="btn-secondary px-2.5 py-1 text-xs shrink-0">نسخ</button>
+          </div>
+          ${it.note ? `<div class="text-xs text-stone-600 pt-1 border-t border-stone-200">ملاحظة: ${escapeHtml(it.note)}</div>` : ''}
+        </div>
+      `).join('');
+      document.getElementById('deliveryModal').classList.remove('hidden');
+    }
+
+    function copyAllDelivered() {
+      const txt = lastDeliveredItems.map(i => i.note ? `${i.account} | ${i.note}` : i.account).join('\n');
+      copyText(txt);
+    }
+
+    function openStockModal(productId) {
+      activeStockProductId = productId;
+      const product = state.products.find(p => p.id === productId);
+      if (!product) return;
+      document.getElementById('stockModalTitle').textContent = `مخزون: ${product.name}`;
+      document.getElementById('stockBatchNote').value = product.defaultNote || '';
+      document.getElementById('stockAccountsInput').value = '';
+      renderStockModalList(product);
+      document.getElementById('stockModal').classList.remove('hidden');
+    }
+
+    function renderStockModalList(product) {
+      const stock = product.stock || [];
+      document.getElementById('currentStockCount').textContent = stock.length;
+      document.getElementById('currentStockList').innerHTML = stock.length
+        ? stock.map((s, idx) => `
+            <div class="flex items-center justify-between bg-stone-50 border border-stone-200 rounded px-3 py-2 text-xs">
+              <div class="min-w-0">
+                <div class="mono truncate" dir="ltr">${escapeHtml(s.account)}</div>
+                ${s.note ? `<div class="text-stone-500 text-[11px] truncate">${escapeHtml(s.note)}</div>` : ''}
+              </div>
+              <button onclick="removeStockItem(${idx})" class="text-red-700 hover:underline mr-3 shrink-0">حذف</button>
+            </div>
+          `).join('')
+        : `<div class="text-xs text-stone-400">لا يوجد مخزون مضاف حالياً</div>`;
+    }
+
+    async function submitAddStock() {
+      const accountsText = document.getElementById('stockAccountsInput').value;
+      const note = document.getElementById('stockBatchNote').value;
+      try {
+        await apiRequest(`/api/admin/products/${activeStockProductId}/stock`, {
+          method: 'POST',
+          body: JSON.stringify({ accountsText, note })
+        });
+        document.getElementById('stockAccountsInput').value = '';
+        await loadState();
+        const updated = state.products.find(p => p.id === activeStockProductId);
+        if (updated) renderStockModalList(updated);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function removeStockItem(idx) {
+      try {
+        await apiRequest(`/api/admin/products/${activeStockProductId}/stock/${idx}`, { method: 'DELETE' });
+        await loadState();
+        const updated = state.products.find(p => p.id === activeStockProductId);
+        if (updated) renderStockModalList(updated);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function openProductModal(productId = null) {
+      const p = productId ? state.products.find(x => x.id === productId) : null;
+      document.getElementById('productModalTitle').textContent = p ? 'تعديل المنتج' : 'إضافة منتج جديد';
+      document.getElementById('prodIdInput').value = p ? p.id : '';
+      document.getElementById('prodNameInput').value = p ? p.name : '';
+      document.getElementById('prodDurationInput').value = p ? p.duration : '';
+      document.getElementById('prodPriceInput').value = p ? p.price : '';
+      document.getElementById('prodNoteInput').value = p ? (p.defaultNote || '') : '';
+      document.getElementById('productModal').classList.remove('hidden');
+    }
+
+    async function submitProductForm() {
+      const id = document.getElementById('prodIdInput').value;
+      const name = document.getElementById('prodNameInput').value;
+      const duration = document.getElementById('prodDurationInput').value;
+      const price = document.getElementById('prodPriceInput').value;
+      const defaultNote = document.getElementById('prodNoteInput').value;
+
+      try {
+        await apiRequest('/api/admin/products', {
+          method: 'POST',
+          body: JSON.stringify({ id: id || undefined, name, duration, price, defaultNote })
+        });
+        closeModal('productModal');
+        await loadState();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+      try {
+        await apiRequest(`/api/admin/products/${id}`, { method: 'DELETE' });
+        await loadState();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function toggleApiStatus() {
+      try {
+        await apiRequest('/api/admin/settings', {
+          method: 'POST',
+          body: JSON.stringify({ enabled: !state.apiSettings.enabled })
+        });
+        await loadState();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function regenerateApiKey() {
+      if (!confirm('سيتم إيقاف المفتاح القديم فوراً وتوليد مفتاح جديد. هل تريد المتابعة؟')) return;
+      try {
+        await apiRequest('/api/admin/settings', {
+          method: 'POST',
+          body: JSON.stringify({ regenerateKey: true })
+        });
+        await loadState();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function savePasswords() {
+      const adminPassword = document.getElementById('newAdminPass').value;
+      const userPassword = document.getElementById('newUserPass').value;
+      if (!adminPassword && !userPassword) return;
+      try {
+        await apiRequest('/api/admin/settings', {
+          method: 'POST',
+          body: JSON.stringify({ adminPassword, userPassword })
+        });
+        document.getElementById('newAdminPass').value = '';
+        document.getElementById('newUserPass').value = '';
+        alert('تم تحديث كلمات المرور بنجاح');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function toggleOrderReveal(orderId) {
+      revealedOrders[orderId] = !revealedOrders[orderId];
+      renderContent();
+    }
+
+    function copyOrderItems(orderId) {
+      const order = state.orders.find(o => o.id === orderId);
+      if (!order) return;
+      const text = order.items.map(i => i.note ? `${i.account} | ${i.note}` : i.account).join('\n');
+      copyText(text);
+    }
+
+    function exportOrdersCSV() {
+      const rows = [['Order ID', 'Product', 'Quantity', 'Total Price', 'Source', 'Accounts & Notes', 'Date']];
+      state.orders.forEach(o => {
+        const details = o.items.map(i => i.note ? `${i.account} (${i.note})` : i.account).join(' ; ');
+        rows.push([o.id, o.productName, o.quantity, o.totalPrice, o.source, details, o.createdAt]);
+      });
+      const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `alpha-digital-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeJs(str) {
+      return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    initApp();
+  </script>
+</body>
+</html>
