@@ -315,6 +315,38 @@ app.get('/api/v1/products', apiKeyMiddleware, (req, res) => {
   res.json({ success: true, products: list });
 });
 
+app.get('/api/v1/products/:id', apiKeyMiddleware, (req, res) => {
+  const db = readDB();
+  const product = db.products.find(p => p.id === req.params.id);
+  if (!product) {
+    return res.status(404).json({ success: false, error: 'Product not found' });
+  }
+  res.json({
+    success: true,
+    product: {
+      id: product.id,
+      name: product.name,
+      duration: product.duration,
+      price: product.price,
+      available_stock: product.stock.length
+    }
+  });
+});
+
+app.get('/api/v1/stock/:id', apiKeyMiddleware, (req, res) => {
+  const db = readDB();
+  const product = db.products.find(p => p.id === req.params.id);
+  if (!product) {
+    return res.status(404).json({ success: false, error: 'Product not found' });
+  }
+  res.json({
+    success: true,
+    product_id: product.id,
+    product: product.name,
+    available_stock: product.stock.length
+  });
+});
+
 app.post('/api/v1/orders', apiKeyMiddleware, (req, res) => {
   const { product_id, quantity } = req.body || {};
   const qty = parseInt(quantity, 10) || 1;
@@ -372,6 +404,26 @@ app.get('/api/v1/orders', apiKeyMiddleware, (req, res) => {
       items: o.items,
       created_at: o.createdAt
     }))
+  });
+});
+
+app.get('/api/v1/orders/:id', apiKeyMiddleware, (req, res) => {
+  const db = readDB();
+  const order = db.orders.find(o => o.id === req.params.id);
+  if (!order) {
+    return res.status(404).json({ success: false, error: 'Order not found' });
+  }
+  res.json({
+    success: true,
+    order: {
+      order_id: order.id,
+      product: order.productName,
+      quantity: order.quantity,
+      total_price: order.totalPrice,
+      source: order.source,
+      items: order.items,
+      created_at: order.createdAt
+    }
   });
 });
 
