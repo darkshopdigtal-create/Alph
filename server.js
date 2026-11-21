@@ -59,7 +59,8 @@ const defaultDB = {
       ]
     }
   ],
-  orders: []
+  orders: [],
+  settlements: []
 };
 
 function readDB() {
@@ -68,7 +69,10 @@ function readDB() {
       fs.writeFileSync(DB_FILE, JSON.stringify(defaultDB, null, 2), 'utf8');
       return JSON.parse(JSON.stringify(defaultDB));
     }
-    return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    if (!Array.isArray(data.settlements)) data.settlements = [];
+    (data.orders || []).forEach(o => { if (typeof o.settled !== 'boolean') o.settled = false; });
+    return data;
   } catch (err) {
     return JSON.parse(JSON.stringify(defaultDB));
   }
@@ -164,6 +168,7 @@ app.get('/api/portal/state', authMiddleware(), (req, res) => {
     success: true,
     products,
     orders: db.orders,
+    settlements: db.settlements || [],
     apiSettings: db.apiSettings,
     users: isAdmin ? {
       adminUsername: db.users.admin.username,
@@ -195,6 +200,7 @@ app.post('/api/portal/orders', authMiddleware(), (req, res) => {
     unitPrice: product.price,
     totalPrice: Number((product.price * qty).toFixed(2)),
     source: 'WEB',
+    settled: false,
     items: pulledItems,
     createdAt: new Date().toISOString()
   };
@@ -302,6 +308,29 @@ app.post('/api/admin/settings', authMiddleware('admin'), (req, res) => {
   res.json({ success: true, apiSettings: db.apiSettings });
 });
 
+// Admin: Settle all outstanding debt (mark every unsettled order settled)
+app.post('/api/admin/settle', authMiddleware('admin'), (req, res) => {
+  const db = readDB();
+  const unsettled = db.orders.filter(o => !o.settled);
+  if (!unsettled.length) {
+    return res.json({ success: true, settledCount: 0, amount: 0, message: 'لا توجد ديون مستحقة' });
+  }
+  const amount = Number(unsettled.reduce((sum, o) => sum + (o.totalPrice || 0), 0).toFixed(2));
+  const now = new Date().toISOString();
+  unsettled.forEach(o => { o.settled = true; o.settledAt = now; });
+  const settlement = {
+    id: 'STL-' + Math.floor(100000 + Math.random() * 900000),
+    amount,
+    ordersCount: unsettled.length,
+    orderIds: unsettled.map(o => o.id),
+    settledAt: now,
+    settledBy: req.user.username
+  };
+  db.settlements.unshift(settlement);
+  writeDB(db);
+  res.json({ success: true, settledCount: unsettled.length, amount, settlement });
+});
+
 // --- PUBLIC EXTERNAL REST API (FOR RESELLER INTEGRATION) ---
 app.get('/api/v1/products', apiKeyMiddleware, (req, res) => {
   const db = readDB();
@@ -373,6 +402,7 @@ app.post('/api/v1/orders', apiKeyMiddleware, (req, res) => {
     unitPrice: product.price,
     totalPrice: Number((product.price * qty).toFixed(2)),
     source: 'API',
+    settled: false,
     items: pulledItems,
     createdAt: new Date().toISOString()
   };
@@ -401,6 +431,7 @@ app.get('/api/v1/orders', apiKeyMiddleware, (req, res) => {
       quantity: o.quantity,
       total_price: o.totalPrice,
       source: o.source,
+      settled: !!o.settled,
       items: o.items,
       created_at: o.createdAt
     }))
@@ -421,6 +452,7 @@ app.get('/api/v1/orders/:id', apiKeyMiddleware, (req, res) => {
       quantity: order.quantity,
       total_price: order.totalPrice,
       source: order.source,
+      settled: !!order.settled,
       items: order.items,
       created_at: order.createdAt
     }

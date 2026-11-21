@@ -583,14 +583,21 @@ Body: {
     // --- SHARED ORDERS TABLE ---
     function renderOrdersTable(isAdmin) {
       const totalAmount = state.orders.reduce((sum, o) => sum + o.totalPrice, 0);
+      const unsettledOrders = state.orders.filter(o => !o.settled);
+      const debtAmount = unsettledOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+      const settlements = state.settlements || [];
       return `
         <div class="card overflow-hidden">
           <div class="px-5 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 class="font-bold text-sm">سجل الطلبات المسحوبة (${state.orders.length})</h2>
               <p class="text-xs text-stone-500 mt-0.5">إجمالي قيمة الطلبات: <span class="mono font-semibold text-stone-900">$${totalAmount.toFixed(2)}</span></p>
+              <p class="text-xs mt-1">الدين المستحق: <span class="mono font-bold ${debtAmount > 0 ? 'text-red-700' : 'text-green-700'}">$${debtAmount.toFixed(2)}</span> <span class="text-stone-500">(${unsettledOrders.length} طلب غير مسدد)</span></p>
             </div>
-            ${state.orders.length ? `<button onclick="exportOrdersCSV()" class="btn-secondary px-3.5 py-1.5 text-xs font-medium">تصدير CSV</button>` : ''}
+            <div class="flex items-center gap-2">
+              ${isAdmin && debtAmount > 0 ? `<button onclick="settleAllDebts()" class="btn-primary px-3.5 py-1.5 text-xs font-medium">تسوية الكل — $${debtAmount.toFixed(2)}</button>` : ''}
+              ${state.orders.length ? `<button onclick="exportOrdersCSV()" class="btn-secondary px-3.5 py-1.5 text-xs font-medium">تصدير CSV</button>` : ''}
+            </div>
           </div>
 
           ${!state.orders.length
@@ -603,6 +610,7 @@ Body: {
                       <th class="py-3 px-4 font-medium">المنتج</th>
                       <th class="py-3 px-3 font-medium">الكمية</th>
                       <th class="py-3 px-3 font-medium">الإجمالي</th>
+                      <th class="py-3 px-3 font-medium">الحالة</th>
                       <th class="py-3 px-3 font-medium">المصدر</th>
                       <th class="py-3 px-4 font-medium">البيانات والملاحظات</th>
                       <th class="py-3 px-4 font-medium">التاريخ</th>
@@ -618,6 +626,9 @@ Body: {
                           <td class="py-3.5 px-4 font-medium text-stone-900">${escapeHtml(o.productName)}</td>
                           <td class="py-3.5 px-3 mono text-xs">${o.quantity}</td>
                           <td class="py-3.5 px-3 mono text-xs font-medium">$${o.totalPrice.toFixed(2)}</td>
+                          <td class="py-3.5 px-3">${o.settled
+                            ? `<span class="text-[11px] px-2 py-0.5 rounded bg-green-100 text-green-800 border border-green-200">مسدد</span>`
+                            : `<span class="text-[11px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">غير مسدد</span>`}</td>
                           <td class="py-3.5 px-3">
                             <span class="mono text-[11px] px-2 py-0.5 rounded bg-stone-100 border border-stone-200">${o.source}</span>
                           </td>
@@ -648,6 +659,27 @@ Body: {
               </div>`
           }
         </div>
+        ${isAdmin && settlements.length ? `
+        <div class="card overflow-hidden mt-5">
+          <div class="px-5 py-4 border-b border-stone-200">
+            <h2 class="font-bold text-sm">سجل التسويات (${settlements.length})</h2>
+            <p class="text-xs text-stone-500 mt-0.5">كل تسوية صفّرت الدين المستحق بتاريخها</p>
+          </div>
+          <div class="divide-y divide-stone-200">
+            ${settlements.map(st => `
+              <div class="px-5 py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div>
+                  <span class="mono text-xs font-medium">${st.id}</span>
+                  <span class="text-xs text-stone-500"> — ${st.ordersCount} طلب</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="mono text-xs font-bold text-green-700">$${Number(st.amount).toFixed(2)}</span>
+                  <span class="text-xs text-stone-500">${new Date(st.settledAt).toLocaleString('ar-IQ', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>` : ''}
       `;
     }
 
@@ -809,6 +841,20 @@ Body: {
       }
     }
 
+    async function settleAllDebts() {
+      const unsettled = state.orders.filter(o => !o.settled);
+      const amount = unsettled.reduce((sum, o) => sum + o.totalPrice, 0);
+      if (!unsettled.length) return;
+      if (!confirm(`سيتم تسوية ${unsettled.length} طلب بقيمة إجمالية $${amount.toFixed(2)} وتصفير الدين. هل تريد المتابعة؟`)) return;
+      try {
+        const data = await apiRequest('/api/admin/settle', { method: 'POST', body: JSON.stringify({}) });
+        alert(`تمت التسوية بنجاح: ${data.settledCount} طلب بقيمة $${Number(data.amount).toFixed(2)} — الدين الآن $0.00`);
+        await loadState();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
     function toggleOrderReveal(orderId) {
       revealedOrders[orderId] = !revealedOrders[orderId];
       renderContent();
@@ -822,10 +868,10 @@ Body: {
     }
 
     function exportOrdersCSV() {
-      const rows = [['Order ID', 'Product', 'Quantity', 'Total Price', 'Source', 'Accounts & Notes', 'Date']];
+      const rows = [['Order ID', 'Product', 'Quantity', 'Total Price', 'Source', 'Settled', 'Accounts & Notes', 'Date']];
       state.orders.forEach(o => {
         const details = o.items.map(i => i.note ? `${i.account} (${i.note})` : i.account).join(' ; ');
-        rows.push([o.id, o.productName, o.quantity, o.totalPrice, o.source, details, o.createdAt]);
+        rows.push([o.id, o.productName, o.quantity, o.totalPrice, o.source, o.settled ? 'مسدد' : 'غير مسدد', details, o.createdAt]);
       });
       const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
