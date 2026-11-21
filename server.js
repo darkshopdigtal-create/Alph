@@ -10,7 +10,11 @@ const DB_FILE = path.join(__dirname, 'database.json');
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve index.html directly from the root directory
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Default Initial Database
 const defaultDB = {
