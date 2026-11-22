@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
 });
 
 // Default Initial Database
+// Prices are in Iraqi dinars (IQD).
 const defaultDB = {
   users: {
     admin: { username: 'admin', password: process.env.ADMIN_PASSWORD || '1234', role: 'admin' },
@@ -35,7 +36,7 @@ const defaultDB = {
       id: 'prod_1',
       name: 'ChatGPT Plus',
       duration: 'شهر واحد',
-      price: 14.50,
+      price: 25000,
       image: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg',
       defaultNote: 'حساب خاص - لا تقم بتغيير البريد الإلكتروني',
       stock: [
@@ -47,7 +48,7 @@ const defaultDB = {
       id: 'prod_2',
       name: 'Canva Pro',
       duration: 'سنة كاملة',
-      price: 4.00,
+      price: 7000,
       image: 'https://cdn.jsdelivr.net/npm/simple-icons@13/icons/canva.svg',
       defaultNote: 'دعوة فريق رسمية على إيميل العميل',
       stock: [
@@ -58,7 +59,7 @@ const defaultDB = {
       id: 'prod_3',
       name: 'CapCut Pro',
       duration: 'شهر واحد',
-      price: 5.50,
+      price: 9500,
       image: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Capcut-icon.svg',
       defaultNote: 'تسجيل دخول مباشر عبر البريد وكلمة المرور',
       stock: [
@@ -238,7 +239,7 @@ app.get('/api/portal/state', authMiddleware(), (req, res) => {
 
 // Buy Order with payment receipt (Customer via Web Portal)
 // Buyer transfers to the MasterCard and uploads a transfer screenshot;
-// stock is pulled only after the admin confirms the payment.
+// the account is delivered to the buyer immediately.
 app.post('/api/portal/orders', authMiddleware(), (req, res) => {
   if (req.user.role === 'admin') {
     return res.status(403).json({ success: false, error: 'حساب الإدارة لا يمكنه الشراء' });
@@ -275,25 +276,25 @@ app.post('/api/portal/orders', authMiddleware(), (req, res) => {
     duration: product.duration,
     quantity: qty,
     unitPrice: product.price,
-    totalPrice: Number((product.price * qty).toFixed(2)),
+    totalPrice: product.price * qty,
     source: 'WEB',
     buyer: req.user.username,
-    status: 'pending_payment',
+    status: 'confirmed',
     receiptImage,
-    settled: false,
+    settled: true,
     items: reservedItems,
     createdAt: new Date().toISOString()
   };
 
   db.orders.unshift(order);
   writeDB(db);
-  res.json({ success: true, order: { ...order, receiptImage: undefined, items: [] } });
+  res.json({ success: true, order: { ...order, receiptImage: undefined } });
 });
 
 // Admin: Create or Update Product
 app.post('/api/admin/products', authMiddleware('admin'), (req, res) => {
   const { id, name, duration, price, defaultNote, image } = req.body || {};
-  if (!name || !duration || isNaN(parseFloat(price))) {
+  if (!name || !duration || isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
     return res.status(400).json({ success: false, error: 'يرجى إكمال بيانات المنتج بشكل صحيح' });
   }
 
@@ -303,7 +304,7 @@ app.post('/api/admin/products', authMiddleware('admin'), (req, res) => {
     if (!existing) return res.status(404).json({ success: false, error: 'المنتج غير موجود' });
     existing.name = String(name).trim();
     existing.duration = String(duration).trim();
-    existing.price = Number(parseFloat(price).toFixed(2));
+    existing.price = Math.round(parseFloat(price));
     existing.defaultNote = String(defaultNote || '').trim();
     existing.image = String(image || '').trim();
   } else {
@@ -311,7 +312,7 @@ app.post('/api/admin/products', authMiddleware('admin'), (req, res) => {
       id: 'prod_' + Date.now(),
       name: String(name).trim(),
       duration: String(duration).trim(),
-      price: Number(parseFloat(price).toFixed(2)),
+      price: Math.round(parseFloat(price)),
       defaultNote: String(defaultNote || '').trim(),
       image: String(image || '').trim(),
       stock: []
@@ -399,7 +400,7 @@ app.post('/api/admin/settle', authMiddleware('admin'), (req, res) => {
   if (!unsettled.length) {
     return res.json({ success: true, settledCount: 0, amount: 0, message: 'لا توجد ديون مستحقة' });
   }
-  const amount = Number(unsettled.reduce((sum, o) => sum + (o.totalPrice || 0), 0).toFixed(2));
+  const amount = unsettled.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
   const now = new Date().toISOString();
   unsettled.forEach(o => { o.settled = true; o.settledAt = now; });
   const settlement = {

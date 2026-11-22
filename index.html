@@ -9,81 +9,113 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: 'IBM Plex Sans Arabic', sans-serif;
-      background: linear-gradient(180deg, #FAFAF9 0%, #EFF1F4 100%);
-      color: #141413;
+      background: #FAF8F4;
+      color: #171412;
       min-height: 100vh;
     }
-    .mono { font-family: 'JetBrains Mono', monospace; }
+    ::selection { background: #DDD6FE; color: #2E1065; }
+    .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
     .card {
       background: #FFFFFF;
-      border: 1px solid #E8E8E6;
-      border-radius: 14px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      border: 1px solid #EDE9E0;
+      border-radius: 22px;
+      box-shadow: 0 1px 2px rgba(23,20,18,0.04);
     }
     .btn-primary {
-      background: #171717;
+      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
       color: #FFFFFF;
-      border-radius: 10px;
-      transition: all 0.15s ease;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(109,40,217,0.28);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
     }
-    .btn-primary:hover:not(:disabled) {
-      background: #000000;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
-    }
-    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(109,40,217,0.36); filter: brightness(1.06); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
     .btn-secondary {
       background: #FFFFFF;
-      color: #141413;
-      border: 1px solid #DCDAD3;
-      border-radius: 10px;
-      transition: background 0.15s ease;
+      color: #171412;
+      border: 1px solid #E2DED4;
+      border-radius: 12px;
+      transition: background 0.15s ease, border-color 0.15s ease;
     }
-    .btn-secondary:hover { background: #F2F1ED; }
+    .btn-secondary:hover { background: #F4F1EA; border-color: #D8D2C4; }
     .input-field {
       background: #FFFFFF;
-      border: 1px solid #DCDAD3;
-      border-radius: 10px;
-      padding: 0.6rem 0.75rem;
+      border: 1px solid #E2DED4;
+      border-radius: 12px;
+      padding: 0.7rem 0.85rem;
       font-size: 0.9rem;
       width: 100%;
       outline: none;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .input-field:focus { border-color: #171717; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+    .input-field:focus { border-color: #7C3AED; box-shadow: 0 0 0 3px rgba(124,58,237,0.14); }
     .hero-gradient {
-      background: linear-gradient(135deg, #0F172A 0%, #312E81 55%, #6D28D9 100%);
+      background:
+        radial-gradient(600px 300px at 85% -10%, rgba(219,39,119,0.35), transparent 60%),
+        radial-gradient(500px 260px at 10% 110%, rgba(124,58,237,0.45), transparent 60%),
+        linear-gradient(135deg, #17102E 0%, #2A1650 55%, #3B1470 100%);
+    }
+    .hero-glow { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; }
+    .glow-a { width: 260px; height: 260px; background: rgba(124,58,237,0.5); top: -90px; left: -60px; }
+    .glow-b { width: 220px; height: 220px; background: rgba(219,39,119,0.35); bottom: -100px; right: -40px; }
+    .brand-panel {
+      background:
+        radial-gradient(420px 240px at 90% -10%, rgba(219,39,119,0.4), transparent 60%),
+        linear-gradient(160deg, #1B1238 0%, #2A1650 60%, #3B1470 100%);
+    }
+    .check-dot {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 9999px; flex-shrink: 0;
+      background: rgba(52,211,153,0.18); color: #6EE7B7; font-size: 12px; font-weight: 700;
+    }
+    .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 12px; font-weight: 800; font-size: 15px;
+      background: #F1EBFE; color: #6D28D9; margin-bottom: 10px;
     }
     .logo-tile {
-      background: linear-gradient(135deg, #4F46E5, #9333EA);
-      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+      background: linear-gradient(135deg, #7C3AED, #DB2777);
+      box-shadow: 0 10px 24px rgba(124,58,237,0.35);
     }
-    .product-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
-    .product-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.10); }
-    .product-card.out-of-stock { opacity: 0.75; }
-    .product-card.out-of-stock .product-img-area { filter: grayscale(0.7); }
+    .product-card { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(23,20,18,0.12); border-color: #E3DCF9; }
+    .product-card.out-of-stock { opacity: 0.8; }
+    .product-card.out-of-stock .product-img-area { filter: grayscale(0.75); }
     .trust-chip {
-      background: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.10);
       border: 1px solid rgba(255,255,255,0.22);
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
     }
+    .animate-in { animation: fadeUp 0.45s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
   <!-- LOGIN VIEW -->
-  <div id="loginView" class="flex-1 flex items-center justify-center p-4 py-10">
-    <div class="w-full max-w-sm">
-      <div class="text-center mb-6">
-        <div class="logo-tile inline-flex items-center justify-center w-14 h-14 rounded-2xl text-white text-2xl font-bold mb-3">α</div>
-        <div class="font-bold text-xl text-stone-900">ألفا ديجيتال</div>
-        <p class="text-xs text-stone-500 mt-1">متجر الحسابات الرقمية — ادفع بالماستركارد واستلم حسابك</p>
+  <div id="loginView" class="flex-1 flex items-center justify-center p-4 py-8">
+    <div class="w-full max-w-4xl grid md:grid-cols-5 rounded-[28px] overflow-hidden border border-stone-200/80 shadow-2xl bg-white">
+      <div class="brand-panel md:col-span-2 p-8 sm:p-10 text-white relative overflow-hidden flex flex-col">
+        <div class="hero-glow glow-a"></div>
+        <div class="relative z-10">
+          <div class="logo-tile inline-flex items-center justify-center w-12 h-12 rounded-2xl text-white text-2xl font-bold mb-4">α</div>
+          <div class="font-extrabold text-2xl leading-tight">ألفا ديجيتال</div>
+          <p class="text-sm text-violet-100/90 mt-2 leading-relaxed">حسابات ذكاء اصطناعي أصلية — ChatGPT وCanva وCapCut — بأسعار واضحة بالدينار العراقي.</p>
+          <div class="space-y-3 mt-8 text-sm">
+            <div class="flex items-center gap-2.5"><span class="check-dot">✓</span> استلام فوري بعد رفع إثبات التحويل</div>
+            <div class="flex items-center gap-2.5"><span class="check-dot">✓</span> دفع آمن عبر ماستركارد</div>
+            <div class="flex items-center gap-2.5"><span class="check-dot">✓</span> حسابات أصلية مع ملاحظات الاستخدام</div>
+          </div>
+        </div>
+        <p class="relative z-10 text-[11px] text-violet-200/80 mt-auto pt-8">الدفع عبر ماستركارد فقط • الأسعار بالدينار العراقي</p>
       </div>
-      <div class="card w-full p-7 shadow-xl">
+      <div class="md:col-span-3 p-8 sm:p-10">
         <div class="mb-6">
-          <h1 id="authTitle" class="text-xl font-bold text-stone-900">تسجيل الدخول</h1>
+          <h1 id="authTitle" class="text-2xl font-extrabold text-stone-900">تسجيل الدخول</h1>
           <p class="text-xs text-stone-500 mt-1">سجّل دخولك أو أنشئ حساباً جديداً للشراء</p>
         </div>
 
@@ -126,7 +158,6 @@
           </button>
         </form>
       </div>
-      <p class="text-center text-[11px] text-stone-400 mt-4">الدفع عبر ماستركارد فقط • التسليم بعد تأكيد التحويل</p>
     </div>
   </div>
 
@@ -142,6 +173,7 @@
             <span class="text-[10px] text-stone-400 tracking-widest">ALPHA DIGITAL STORE</span>
           </span>
           <span id="roleBadge" class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 border border-stone-200 mr-1"></span>
+          <span class="hidden sm:inline-block text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100 font-bold">الأسعار بالدينار العراقي</span>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="loadState()" class="btn-secondary px-3 py-1.5 text-xs font-medium">تحديث</button>
@@ -152,24 +184,31 @@
 
     <!-- Navigation Tabs -->
     <div class="bg-white border-b border-stone-200">
-      <div id="navTabs" class="max-w-6xl mx-auto px-4 flex gap-6 text-sm"></div>
+      <div id="navTabs" class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap gap-2 text-sm"></div>
     </div>
 
     <!-- Main Content -->
     <main class="max-w-6xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
-      <div id="mainContent"></div>
+      <div id="mainContent" class="animate-in"></div>
     </main>
   </div>
 
-  <footer class="border-t border-stone-200 bg-white mt-8">
-    <div class="max-w-6xl mx-auto px-4 py-5 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500">
-      <div><span class="font-bold text-stone-800">ألفا ديجيتال</span> — متجر الحسابات الرقمية</div>
-      <div>الدفع عبر ماستركارد فقط • التسليم بعد تأكيد التحويل</div>
+  <footer class="bg-[#171412] text-stone-400 mt-10">
+    <div class="max-w-6xl mx-auto px-4 py-8 flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-2"><span class="logo-tile inline-flex items-center justify-center w-7 h-7 rounded-lg text-white text-sm font-bold">α</span><span class="font-bold text-white">ألفا ديجيتال</span></div>
+        <p class="text-xs leading-relaxed">متجر الحسابات الرقمية — حسابات ذكاء اصطناعي أصلية بأسعار واضحة بالدينار العراقي.</p>
+      </div>
+      <div class="text-xs leading-relaxed">
+        <div class="text-white font-bold mb-1">الدفع والتسليم</div>
+        <div>الدفع عبر ماستركارد فقط • استلام فوري بعد رفع إثبات التحويل</div>
+        <div>جميع الأسعار بالدينار العراقي (د.ع)</div>
+      </div>
     </div>
   </footer>
 
   <!-- DELIVERY MODAL -->
-  <div id="deliveryModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+  <div id="deliveryModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-lg p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-stone-200 pb-3">
         <div>
@@ -187,7 +226,7 @@
   </div>
 
   <!-- ADD STOCK MODAL (ADMIN) -->
-  <div id="stockModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+  <div id="stockModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-lg p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-stone-200 pb-3">
         <div>
@@ -217,7 +256,7 @@
   </div>
 
   <!-- PRODUCT FORM MODAL (ADMIN) -->
-  <div id="productModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+  <div id="productModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-md p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-stone-200 pb-3">
         <h3 id="productModalTitle" class="font-bold text-base">إضافة منتج</h3>
@@ -235,8 +274,8 @@
             <input id="prodDurationInput" type="text" placeholder="شهر واحد" class="input-field" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1">السعر ($)</label>
-            <input id="prodPriceInput" type="number" step="0.01" placeholder="14.50" class="input-field mono" dir="ltr" />
+            <label class="block text-xs font-medium text-stone-700 mb-1">السعر (د.ع)</label>
+            <input id="prodPriceInput" type="number" step="100" min="0" placeholder="25000" class="input-field mono" dir="ltr" />
           </div>
         </div>
         <div>
@@ -256,7 +295,7 @@
   </div>
 
   <!-- BUY MODAL -->
-  <div id="buyModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+  <div id="buyModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-lg p-6 space-y-4 shadow-xl">
       <div class="flex items-center justify-between border-b border-stone-200 pb-3">
         <div class="flex items-center gap-3">
@@ -273,7 +312,7 @@
         <label class="block text-xs font-medium text-stone-700 mb-1.5">صورة إثبات التحويل (سكرين شوت)</label>
         <input id="receiptInput" type="file" accept="image/*" class="input-field text-xs" />
         <img id="receiptPreview" class="hidden mt-3 max-h-48 rounded-lg border border-stone-200 mx-auto" />
-        <p class="text-[11px] text-stone-500 mt-1.5">ارفع سكرين شوت واضحاً يظهر المبلغ المحوّل. سيتم تسليم الحساب بعد تأكيد الإدارة للتحويل.</p>
+        <p class="text-[11px] text-stone-500 mt-1.5">ارفع سكرين شوت واضحاً يظهر المبلغ المحوّل — وسيتم تسليم الحساب لك مباشرة بعد إرسال الطلب.</p>
       </div>
       <div id="buyError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
       <button id="buySubmitBtn" onclick="submitBuyOrder()" class="btn-primary w-full py-2.5 text-sm font-medium">إرسال الطلب</button>
@@ -281,7 +320,7 @@
   </div>
 
   <!-- RECEIPT MODAL -->
-  <div id="receiptModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+  <div id="receiptModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-2xl p-4 space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="font-bold text-sm">إثبات التحويل</h3>
@@ -445,10 +484,10 @@
           ];
 
       document.getElementById('navTabs').innerHTML = tabs.map(t => `
-        <button onclick="setTab('${t.id}')" class="py-3 border-b-2 font-medium transition-colors ${
+        <button onclick="setTab('${t.id}')" class="px-4 py-2 rounded-full text-xs font-bold transition-colors ${
           activeTab === t.id
-            ? 'border-stone-900 text-stone-900'
-            : 'border-transparent text-stone-500 hover:text-stone-800'
+            ? 'bg-stone-900 text-white shadow'
+            : 'bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-800'
         }">${t.label}</button>
       `).join('');
     }
@@ -483,8 +522,8 @@
       buyProductId = productId;
       receiptDataUrl = '';
       const qty = quantities[productId] || 1;
-      const total = (product.price * qty).toFixed(2);
-      document.getElementById('buyMeta').textContent = `${product.name} (${product.duration}) — ×${qty} — الإجمالي $${total}`;
+      const total = product.price * qty;
+      document.getElementById('buyMeta').textContent = `${product.name} (${product.duration}) — ×${qty} — الإجمالي ${formatIQD(total)}`;
       const buyImg = document.getElementById('buyProductImg');
       if (product.image) { buyImg.src = product.image; buyImg.classList.remove('hidden'); } else { buyImg.classList.add('hidden'); }
       const pay = state.paymentSettings || {};
@@ -498,7 +537,7 @@
             <button onclick="copyText('${escapeJs(pay.cardNumber)}')" class="btn-secondary px-2.5 py-1 text-xs shrink-0">نسخ</button>
           </div>
           ${pay.cardHolder ? `<div class="text-xs text-stone-600">اسم صاحب البطاقة: ${escapeHtml(pay.cardHolder)}</div>` : ''}
-          <div class="text-xs text-stone-600">المبلغ المطلوب: <span class="mono font-bold text-stone-900">$${total}</span></div>`;
+          <div class="text-xs text-stone-600">المبلغ المطلوب: <span class="mono font-bold text-stone-900">${formatIQD(total)}</span></div>`;
       } else {
         box.innerHTML = `<div class="text-xs text-amber-800">لم يتم تحديد بيانات الدفع بعد — تواصل مع الإدارة قبل التحويل.</div>`;
       }
@@ -520,15 +559,18 @@
       btn.disabled = true;
       btn.textContent = 'جاري الإرسال...';
       try {
-        await apiRequest('/api/portal/orders', {
+        const data = await apiRequest('/api/portal/orders', {
           method: 'POST',
           body: JSON.stringify({ productId: buyProductId, quantity: quantities[buyProductId] || 1, receiptImage: receiptDataUrl })
         });
         quantities[buyProductId] = 1;
         closeModal('buyModal');
         await loadState();
-        setTab('orders');
-        alert('تم إرسال طلبك بنجاح — سيتم تسليم الحساب بعد تأكيد الإدارة للتحويل');
+        if (data.order && data.order.items && data.order.items.length) {
+          openDeliveryModal(data.order);
+        } else {
+          setTab('orders');
+        }
       } catch (err) {
         errBox.textContent = err.message;
         errBox.classList.remove('hidden');
@@ -560,32 +602,35 @@
     }
 
     const STORE_GRADIENTS = [
-      'linear-gradient(135deg,#CCFBF1 0%,#A7F3D0 55%,#6EE7B7 100%)',
-      'linear-gradient(135deg,#EDE9FE 0%,#DDD6FE 55%,#C4B5FD 100%)',
-      'linear-gradient(135deg,#FFE4E6 0%,#FED7AA 55%,#FDBA74 100%)',
-      'linear-gradient(135deg,#DBEAFE 0%,#BFDBFE 55%,#93C5FD 100%)'
+      'linear-gradient(135deg,#E7F6EE 0%,#D8F0E2 100%)',
+      'linear-gradient(135deg,#EFEBFE 0%,#E4DCFD 100%)',
+      'linear-gradient(135deg,#FDEFE3 0%,#FBE4CC 100%)',
+      'linear-gradient(135deg,#E9F2FE 0%,#D8E7FD 100%)'
     ];
 
     function productImageHtml(p) {
       if (!p.image) {
-        return `<div class="h-20 w-20 rounded-2xl bg-stone-900 text-white flex items-center justify-center font-bold" style="font-size:2rem">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
+        return `<div class="h-24 w-24 rounded-3xl text-white flex items-center justify-center font-bold shadow-lg" style="font-size:2.4rem;background:linear-gradient(135deg,#7C3AED,#DB2777)">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
       }
-      return `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" class="h-20 w-20 object-contain drop-shadow" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-        <div class="h-20 w-20 rounded-2xl bg-stone-900 text-white items-center justify-center font-bold" style="display:none;font-size:2rem">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
+      return `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" class="h-24 w-24 object-contain drop-shadow-lg" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="h-24 w-24 rounded-3xl text-white items-center justify-center font-bold shadow-lg" style="display:none;font-size:2.4rem;background:linear-gradient(135deg,#7C3AED,#DB2777)">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
     }
 
     function renderUserProducts() {
       const availableCount = state.products.filter(p => p.stockCount > 0).length;
       const hero = `
-        <div class="hero-gradient rounded-2xl p-6 sm:p-8 text-white overflow-hidden relative">
+        <div class="hero-gradient rounded-[28px] p-6 sm:p-10 text-white overflow-hidden relative">
+          <div class="hero-glow glow-a"></div>
+          <div class="hero-glow glow-b"></div>
           <div class="relative z-10">
-            <div class="text-xs font-medium text-indigo-200 mb-1 tracking-wide">ALPHA DIGITAL • متجر الحسابات الرقمية</div>
-            <h2 class="text-2xl sm:text-3xl font-bold leading-snug">حسابات ذكاء اصطناعي أصلية،<br class="hidden sm:block" /> جاهزة للاستلام</h2>
-            <p class="text-sm text-indigo-100 mt-2 max-w-xl">اختر حسابك، حوّل المبلغ إلى بطاقة الماستركارد، وارفع سكرين شوت للتحويل — نسلّمك الحساب فور تأكيد الدفع.</p>
-            <div class="flex flex-wrap gap-2 mt-4">
-              <span class="trust-chip text-xs px-3 py-1.5 rounded-full">✓ دفع آمن عبر ماستركارد</span>
-              <span class="trust-chip text-xs px-3 py-1.5 rounded-full">✓ تسليم بعد تأكيد التحويل</span>
-              <span class="trust-chip text-xs px-3 py-1.5 rounded-full">✓ ${availableCount} منتجات متوفرة الآن</span>
+            <div class="text-[11px] font-bold tracking-[0.2em] text-violet-200 mb-3">ALPHA DIGITAL • متجر الحسابات الرقمية</div>
+            <h2 class="text-3xl sm:text-[2.7rem] font-extrabold leading-[1.25]">حسابات ذكاء اصطناعي أصلية،<br class="hidden sm:block" /> تستلمها فوراً بعد الدفع</h2>
+            <p class="text-sm sm:text-base text-violet-100/90 mt-3 max-w-xl leading-relaxed">اختر حسابك، حوّل المبلغ إلى بطاقة الماستركارد، ارفع سكرين شوت للتحويل — ويظهر لك الحساب مباشرة، بدون انتظار.</p>
+            <div class="flex flex-wrap items-center gap-2.5 mt-6">
+              <a href="#productsGrid" class="bg-white text-violet-900 px-5 py-2.5 rounded-full text-sm font-extrabold shadow-lg hover:bg-violet-50 transition-colors">تصفح المنتجات ↓</a>
+              <span class="trust-chip text-xs px-3 py-2 rounded-full">✓ دفع آمن عبر ماستركارد</span>
+              <span class="trust-chip text-xs px-3 py-2 rounded-full">✓ تسليم فوري بعد رفع السكرين</span>
+              <span class="trust-chip text-xs px-3 py-2 rounded-full">✓ ${availableCount} منتجات متوفرة الآن</span>
             </div>
           </div>
         </div>`;
@@ -595,35 +640,62 @@
         </div>`;
       }
       return hero + `
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+        <div class="flex items-end justify-between mt-9 mb-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-stone-900">المنتجات</h2>
+            <p class="text-xs text-stone-500 mt-1">جميع الأسعار بالدينار العراقي (د.ع) — الدفع عبر ماستركارد فقط</p>
+          </div>
+          <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">${availableCount} متوفرة الآن</span>
+        </div>
+        <div id="productsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           ${state.products.map((p, idx) => {
             const qty = quantities[p.id] || 1;
             const outOfStock = p.stockCount === 0;
             return `
               <div class="card product-card ${outOfStock ? 'out-of-stock' : ''} overflow-hidden flex flex-col">
-                <div class="product-img-area h-44 flex items-center justify-center relative" style="background:${STORE_GRADIENTS[idx % STORE_GRADIENTS.length]}">
+                <div class="product-img-area h-48 flex items-center justify-center relative" style="background:${STORE_GRADIENTS[idx % STORE_GRADIENTS.length]}">
                   ${productImageHtml(p)}
-                  ${outOfStock ? `<span class="absolute top-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-red-600 text-white font-medium">نفد المخزون</span>` : `<span class="absolute top-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-white/90 text-emerald-700 font-medium shadow">متوفر: ${p.stockCount}</span>`}
-                  <span class="absolute bottom-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-black/55 text-white">${escapeHtml(p.duration)}</span>
+                  ${outOfStock ? `<span class="absolute top-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-red-600 text-white font-bold shadow">نفد المخزون</span>` : `<span class="absolute top-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-white/95 text-emerald-700 font-bold shadow">متوفر: ${p.stockCount}</span>`}
+                  <span class="absolute bottom-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-black/60 text-white font-medium">${escapeHtml(p.duration)}</span>
                 </div>
                 <div class="p-5 flex flex-col flex-1">
-                  <h3 class="font-bold text-base text-stone-900">${escapeHtml(p.name)}</h3>
-                  ${p.defaultNote ? `<p class="text-xs text-stone-500 mt-1 leading-relaxed">${escapeHtml(p.defaultNote)}</p>` : ''}
-                  <div class="flex items-end justify-between mt-4 mb-4">
-                    <span class="text-2xl font-bold text-stone-900 mono">$${p.price.toFixed(2)}</span>
-                    <div class="inline-flex items-center border border-stone-300 rounded-lg overflow-hidden">
-                      <button onclick="changeQty('${p.id}', -1, ${p.stockCount})" class="px-3 py-1.5 text-sm hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>−</button>
-                      <span class="px-3 py-1.5 text-sm mono border-x border-stone-300">${outOfStock ? 0 : qty}</span>
-                      <button onclick="changeQty('${p.id}', 1, ${p.stockCount})" class="px-3 py-1.5 text-sm hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>+</button>
+                  <h3 class="font-extrabold text-lg text-stone-900 leading-snug">${escapeHtml(p.name)}</h3>
+                  ${p.defaultNote ? `<p class="text-xs text-stone-500 mt-1.5 leading-relaxed">${escapeHtml(p.defaultNote)}</p>` : ''}
+                  <div class="flex items-end justify-between mt-5 mb-4">
+                    <div>
+                      <div class="text-[11px] text-stone-400 font-medium">السعر</div>
+                      <span class="text-[1.65rem] leading-none font-extrabold text-stone-900 mono">${formatIQD(p.price)}</span>
+                    </div>
+                    <div class="inline-flex items-center border border-stone-300 rounded-full overflow-hidden bg-white">
+                      <button onclick="changeQty('${p.id}', -1, ${p.stockCount})" class="px-3 py-2 text-sm font-bold hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>−</button>
+                      <span class="px-3 py-2 text-sm font-bold mono border-x border-stone-300">${outOfStock ? 0 : qty}</span>
+                      <button onclick="changeQty('${p.id}', 1, ${p.stockCount})" class="px-3 py-2 text-sm font-bold hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>+</button>
                     </div>
                   </div>
-                  <button onclick="openBuyModal('${p.id}')" ${outOfStock ? 'disabled' : ''} class="btn-primary w-full py-2.5 text-sm font-medium mt-auto">
-                    ${outOfStock ? 'نفد المخزون' : 'اشترِ الآن'}
+                  <button onclick="openBuyModal('${p.id}')" ${outOfStock ? 'disabled' : ''} class="btn-primary w-full py-3 text-sm font-bold mt-auto">
+                    ${outOfStock ? 'نفد المخزون' : 'اشترِ الآن ←'}
                   </button>
                 </div>
               </div>
             `;
           }).join('')}
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4 mt-8">
+          <div class="card p-5">
+            <div class="step-num">1</div>
+            <h3 class="font-bold text-sm text-stone-900">اختر حسابك</h3>
+            <p class="text-xs text-stone-500 mt-1 leading-relaxed">تصفح المنتجات وحدد الكمية المطلوبة.</p>
+          </div>
+          <div class="card p-5">
+            <div class="step-num">2</div>
+            <h3 class="font-bold text-sm text-stone-900">حوّل وارفع السكرين</h3>
+            <p class="text-xs text-stone-500 mt-1 leading-relaxed">حوّل المبلغ إلى بطاقة الماستركارد وارفع صورة إثبات التحويل.</p>
+          </div>
+          <div class="card p-5">
+            <div class="step-num">3</div>
+            <h3 class="font-bold text-sm text-stone-900">استلم حسابك فوراً</h3>
+            <p class="text-xs text-stone-500 mt-1 leading-relaxed">تظهر بيانات الحساب لك مباشرة بعد إرسال الطلب.</p>
+          </div>
         </div>
       `;
     }
@@ -666,7 +738,7 @@
                     </td>
                     <td class="py-3.5 px-4 mono text-xs text-stone-500" dir="ltr">${p.id}</td>
                     <td class="py-3.5 px-4 text-xs text-stone-600">${escapeHtml(p.duration)}</td>
-                    <td class="py-3.5 px-4 mono font-medium">$${p.price.toFixed(2)}</td>
+                    <td class="py-3.5 px-4 mono font-medium">${formatIQD(p.price)}</td>
                     <td class="py-3.5 px-4">
                       <span class="mono text-xs px-2 py-0.5 rounded ${p.stockCount === 0 ? 'bg-red-50 text-red-700' : 'bg-stone-100 text-stone-800'}">
                         ${p.stockCount} حساب
@@ -762,12 +834,12 @@
           <div class="px-5 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 class="font-bold text-sm">${isAdmin ? 'سجل الطلبات' : 'طلباتي'} (${state.orders.length})</h2>
-              <p class="text-xs text-stone-500 mt-0.5">إجمالي قيمة الطلبات: <span class="mono font-semibold text-stone-900">$${totalAmount.toFixed(2)}</span></p>
-              ${isAdmin ? `<p class="text-xs mt-1">الدين المستحق (طلبات قديمة غير مسددة): <span class="mono font-bold ${debtAmount > 0 ? 'text-red-700' : 'text-green-700'}">$${debtAmount.toFixed(2)}</span> <span class="text-stone-500">(${unsettledOrders.length} طلب غير مسدد)</span></p>` : ''}
+              <p class="text-xs text-stone-500 mt-0.5">إجمالي قيمة الطلبات: <span class="mono font-semibold text-stone-900">${formatIQD(totalAmount)}</span></p>
+              ${isAdmin ? `<p class="text-xs mt-1">الدين المستحق (طلبات قديمة غير مسددة): <span class="mono font-bold ${debtAmount > 0 ? 'text-red-700' : 'text-green-700'}">${formatIQD(debtAmount)}</span> <span class="text-stone-500">(${unsettledOrders.length} طلب غير مسدد)</span></p>` : ''}
               ${pendingOrders.length ? `<p class="text-xs mt-1 text-amber-700 font-medium">${pendingOrders.length} طلب بانتظار تأكيد الدفع</p>` : ''}
             </div>
             <div class="flex items-center gap-2">
-              ${isAdmin && debtAmount > 0 ? `<button onclick="settleAllDebts()" class="btn-primary px-3.5 py-1.5 text-xs font-medium">تسوية الكل — $${debtAmount.toFixed(2)}</button>` : ''}
+              ${isAdmin && debtAmount > 0 ? `<button onclick="settleAllDebts()" class="btn-primary px-3.5 py-1.5 text-xs font-medium">تسوية الكل — ${formatIQD(debtAmount)}</button>` : ''}
               ${isAdmin && state.orders.length ? `<button onclick="exportOrdersCSV()" class="btn-secondary px-3.5 py-1.5 text-xs font-medium">تصدير CSV</button>` : ''}
             </div>
           </div>
@@ -803,7 +875,7 @@
                           ${isAdmin ? `<td class="py-3.5 px-4 mono text-xs" dir="ltr">${escapeHtml(o.buyer || '—')}</td>` : ''}
                           <td class="py-3.5 px-4 font-medium text-stone-900">${escapeHtml(o.productName)}</td>
                           <td class="py-3.5 px-3 mono text-xs">${o.quantity}</td>
-                          <td class="py-3.5 px-3 mono text-xs font-medium">$${o.totalPrice.toFixed(2)}</td>
+                          <td class="py-3.5 px-3 mono text-xs font-medium">${formatIQD(o.totalPrice)}</td>
                           <td class="py-3.5 px-3">${orderStatusBadge(o)}</td>
                           <td class="py-3.5 px-4">
                             ${o.receiptImage ? `<img src="${o.receiptImage}" onclick="openReceiptModal('${o.id}')" class="h-16 w-auto rounded border border-stone-200 cursor-pointer" />` : `<span class="text-xs text-stone-400">—</span>`}
@@ -860,7 +932,7 @@
                   <span class="text-xs text-stone-500"> — ${st.ordersCount} طلب</span>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="mono text-xs font-bold text-green-700">$${Number(st.amount).toFixed(2)}</span>
+                  <span class="mono text-xs font-bold text-green-700">${formatIQD(st.amount)}</span>
                   <span class="text-xs text-stone-500">${new Date(st.settledAt).toLocaleString('ar-IQ', { dateStyle: 'short', timeStyle: 'short' })}</span>
                 </div>
               </div>
@@ -1022,10 +1094,10 @@
       const unsettled = state.orders.filter(o => !o.settled);
       const amount = unsettled.reduce((sum, o) => sum + o.totalPrice, 0);
       if (!unsettled.length) return;
-      if (!confirm(`سيتم تسوية ${unsettled.length} طلب بقيمة إجمالية $${amount.toFixed(2)} وتصفير الدين. هل تريد المتابعة؟`)) return;
+      if (!confirm(`سيتم تسوية ${unsettled.length} طلب بقيمة إجمالية ${formatIQD(amount)} وتصفير الدين. هل تريد المتابعة؟`)) return;
       try {
         const data = await apiRequest('/api/admin/settle', { method: 'POST', body: JSON.stringify({}) });
-        alert(`تمت التسوية بنجاح: ${data.settledCount} طلب بقيمة $${Number(data.amount).toFixed(2)} — الدين الآن $0.00`);
+        alert(`تمت التسوية بنجاح: ${data.settledCount} طلب بقيمة ${formatIQD(data.amount)} — الدين الآن 0 د.ع`);
         await loadState();
       } catch (err) {
         alert(err.message);
@@ -1073,7 +1145,7 @@
     }
 
     function exportOrdersCSV() {
-      const rows = [['Order ID', 'Buyer', 'Product', 'Quantity', 'Total Price', 'Payment Status', 'Settled', 'Accounts & Notes', 'Date']];
+      const rows = [['Order ID', 'Buyer', 'Product', 'Quantity', 'Total Price (IQD)', 'Payment Status', 'Settled', 'Accounts & Notes', 'Date']];
       state.orders.forEach(o => {
         const details = (o.items || []).map(i => i.note ? `${i.account} (${i.note})` : i.account).join(' ; ');
         rows.push([o.id, o.buyer || '', o.productName, o.quantity, o.totalPrice, orderStatusLabel(o), o.settled ? 'مسدد' : 'غير مسدد', details, o.createdAt]);
@@ -1093,6 +1165,10 @@
 
     function copyText(text) {
       navigator.clipboard.writeText(text);
+    }
+
+    function formatIQD(n) {
+      return Math.round(Number(n) || 0).toLocaleString('en-US') + ' د.ع';
     }
 
     function escapeHtml(str) {
