@@ -67,7 +67,7 @@
     <div class="card w-full max-w-sm p-7">
       <div class="mb-6">
         <div class="text-xs font-medium text-stone-500 mb-1">ALPHA DIGITAL</div>
-        <h1 class="text-xl font-bold text-stone-900">تسجيل الدخول</h1>
+        <h1 id="authTitle" class="text-xl font-bold text-stone-900">تسجيل الدخول</h1>
       </div>
 
       <form id="loginForm" class="space-y-4">
@@ -82,6 +82,30 @@
         <div id="loginError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
         <button id="loginSubmitBtn" type="submit" class="btn-primary w-full py-2.5 text-sm font-medium">
           دخول
+        </button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <button id="authToggleBtn" onclick="toggleAuthMode()" class="text-xs text-stone-600 hover:text-stone-900 underline">إنشاء حساب جديد</button>
+      </div>
+
+      <form id="registerForm" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1.5">اسم المستخدم</label>
+          <input id="regUsername" type="text" required autocomplete="username" class="input-field" />
+          <p class="text-[11px] text-stone-500 mt-1">أحرف إنجليزية وأرقام فقط، 3–20 حرفاً</p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1.5">كلمة المرور</label>
+          <input id="regPassword" type="password" required autocomplete="new-password" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-stone-700 mb-1.5">تأكيد كلمة المرور</label>
+          <input id="regPassword2" type="password" required autocomplete="new-password" class="input-field" />
+        </div>
+        <div id="regError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
+        <button id="regSubmitBtn" type="submit" class="btn-primary w-full py-2.5 text-sm font-medium">
+          إنشاء الحساب
         </button>
       </form>
     </div>
@@ -197,10 +221,43 @@
     </div>
   </div>
 
+  <!-- BUY MODAL -->
+  <div id="buyModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+    <div class="card w-full max-w-lg p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+        <div>
+          <h3 class="font-bold text-base">إتمام الشراء</h3>
+          <p id="buyMeta" class="text-xs text-stone-500 mt-0.5"></p>
+        </div>
+        <button onclick="closeModal('buyModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+      </div>
+      <div id="buyPaymentBox" class="bg-stone-50 border border-stone-200 rounded-lg p-4 space-y-2 text-sm"></div>
+      <div>
+        <label class="block text-xs font-medium text-stone-700 mb-1.5">صورة إثبات التحويل (سكرين شوت)</label>
+        <input id="receiptInput" type="file" accept="image/*" class="input-field text-xs" />
+        <img id="receiptPreview" class="hidden mt-3 max-h-48 rounded-lg border border-stone-200 mx-auto" />
+        <p class="text-[11px] text-stone-500 mt-1.5">ارفع سكرين شوت واضحاً يظهر المبلغ المحوّل. سيتم تسليم الحساب بعد تأكيد الإدارة للتحويل.</p>
+      </div>
+      <div id="buyError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
+      <button id="buySubmitBtn" onclick="submitBuyOrder()" class="btn-primary w-full py-2.5 text-sm font-medium">إرسال الطلب</button>
+    </div>
+  </div>
+
+  <!-- RECEIPT MODAL -->
+  <div id="receiptModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+    <div class="card w-full max-w-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-sm">إثبات التحويل</h3>
+        <button onclick="closeModal('receiptModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+      </div>
+      <img id="receiptModalImg" class="w-full max-h-[70vh] object-contain rounded-lg border border-stone-200" />
+    </div>
+  </div>
+
   <script>
     let authToken = sessionStorage.getItem('alpha_token') || '';
     let currentUser = null;
-    let state = { products: [], orders: [], apiSettings: { enabled: true, apiKey: '' } };
+    let state = { products: [], orders: [], paymentSettings: { cardType: 'MasterCard', cardNumber: '', cardHolder: '' }, customers: [] };
     let activeTab = 'products';
     let quantities = {};
     let activeStockProductId = null;
@@ -251,6 +308,50 @@
       }
     });
 
+    let authMode = 'login';
+
+    function toggleAuthMode() {
+      authMode = authMode === 'login' ? 'register' : 'login';
+      document.getElementById('authTitle').textContent = authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد';
+      document.getElementById('loginForm').classList.toggle('hidden', authMode !== 'login');
+      document.getElementById('registerForm').classList.toggle('hidden', authMode !== 'register');
+      document.getElementById('authToggleBtn').textContent = authMode === 'login' ? 'إنشاء حساب جديد' : 'لديك حساب؟ تسجيل الدخول';
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('regError');
+      const btn = document.getElementById('regSubmitBtn');
+      errBox.classList.add('hidden');
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+      const password2 = document.getElementById('regPassword2').value;
+      if (password !== password2) {
+        errBox.textContent = 'كلمتا المرور غير متطابقتين';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'جاري إنشاء الحساب...';
+      try {
+        const data = await apiRequest('/api/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        authToken = data.token;
+        sessionStorage.setItem('alpha_token', authToken);
+        currentUser = data.user;
+        activeTab = 'products';
+        await initApp();
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'إنشاء الحساب';
+      }
+    });
+
     function logout() {
       authToken = '';
       currentUser = null;
@@ -271,7 +372,7 @@
 
         document.getElementById('loginView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
-        document.getElementById('roleBadge').textContent = currentUser.role === 'admin' ? 'الإدارة' : 'حساب التاجر';
+        document.getElementById('roleBadge').textContent = currentUser.role === 'admin' ? 'الإدارة' : 'مشتري';
         await loadState();
       } catch (e) {
         logout();
@@ -299,12 +400,11 @@
         ? [
             { id: 'inventory', label: 'المخزون والمنتجات' },
             { id: 'orders', label: 'سجل الطلبات' },
-            { id: 'settings', label: 'الإعدادات والـ API' }
+            { id: 'settings', label: 'الإعدادات والدفع' }
           ]
         : [
-            { id: 'products', label: 'المنتجات والطلب' },
-            { id: 'orders', label: 'سجل الطلبات' },
-            { id: 'api', label: 'الربط البرمجي API' }
+            { id: 'products', label: 'المنتجات والشراء' },
+            { id: 'orders', label: 'طلباتي' }
           ];
 
       document.getElementById('navTabs').innerHTML = tabs.map(t => `
@@ -323,9 +423,8 @@
         else if (activeTab === 'orders') container.innerHTML = renderOrdersTable(true);
         else container.innerHTML = renderAdminSettings();
       } else {
-        if (activeTab === 'products') container.innerHTML = renderUserProducts();
-        else if (activeTab === 'orders') container.innerHTML = renderOrdersTable(false);
-        else container.innerHTML = renderUserApi();
+        if (activeTab === 'orders') container.innerHTML = renderOrdersTable(false);
+        else container.innerHTML = renderUserProducts();
       }
     }
 
@@ -338,19 +437,87 @@
       }
     }
 
-    async function pullOrder(productId) {
+    let buyProductId = null;
+    let receiptDataUrl = '';
+
+    function openBuyModal(productId) {
+      const product = state.products.find(p => p.id === productId);
+      if (!product) return;
+      buyProductId = productId;
+      receiptDataUrl = '';
       const qty = quantities[productId] || 1;
-      try {
-        const res = await apiRequest('/api/portal/orders', {
-          method: 'POST',
-          body: JSON.stringify({ productId, quantity: qty })
-        });
-        quantities[productId] = 1;
-        await loadState();
-        openDeliveryModal(res.order);
-      } catch (err) {
-        alert(err.message);
+      const total = (product.price * qty).toFixed(2);
+      document.getElementById('buyMeta').textContent = `${product.name} (${product.duration}) — ×${qty} — الإجمالي $${total}`;
+      const pay = state.paymentSettings || {};
+      const box = document.getElementById('buyPaymentBox');
+      if (pay.cardNumber) {
+        box.innerHTML = `
+          <div class="font-semibold text-stone-900">حوّل المبلغ إلى بطاقة ماستركارد</div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs text-stone-500">رقم البطاقة:</span>
+            <code class="mono text-sm font-semibold select-all" dir="ltr">${escapeHtml(pay.cardNumber)}</code>
+            <button onclick="copyText('${escapeJs(pay.cardNumber)}')" class="btn-secondary px-2.5 py-1 text-xs shrink-0">نسخ</button>
+          </div>
+          ${pay.cardHolder ? `<div class="text-xs text-stone-600">اسم صاحب البطاقة: ${escapeHtml(pay.cardHolder)}</div>` : ''}
+          <div class="text-xs text-stone-600">المبلغ المطلوب: <span class="mono font-bold text-stone-900">$${total}</span></div>`;
+      } else {
+        box.innerHTML = `<div class="text-xs text-amber-800">لم يتم تحديد بيانات الدفع بعد — تواصل مع الإدارة قبل التحويل.</div>`;
       }
+      document.getElementById('receiptInput').value = '';
+      document.getElementById('receiptPreview').classList.add('hidden');
+      document.getElementById('buyError').classList.add('hidden');
+      document.getElementById('buyModal').classList.remove('hidden');
+    }
+
+    async function submitBuyOrder() {
+      const errBox = document.getElementById('buyError');
+      const btn = document.getElementById('buySubmitBtn');
+      errBox.classList.add('hidden');
+      if (!receiptDataUrl) {
+        errBox.textContent = 'يرجى رفع صورة إثبات التحويل أولاً';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'جاري الإرسال...';
+      try {
+        await apiRequest('/api/portal/orders', {
+          method: 'POST',
+          body: JSON.stringify({ productId: buyProductId, quantity: quantities[buyProductId] || 1, receiptImage: receiptDataUrl })
+        });
+        quantities[buyProductId] = 1;
+        closeModal('buyModal');
+        await loadState();
+        setTab('orders');
+        alert('تم إرسال طلبك بنجاح — سيتم تسليم الحساب بعد تأكيد الإدارة للتحويل');
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'إرسال الطلب';
+      }
+    }
+
+    function fileToCompressedDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, 1200 / img.width);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          };
+          img.onerror = () => reject(new Error('تعذّر قراءة الصورة'));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error('تعذّر قراءة الملف'));
+        reader.readAsDataURL(file);
+      });
     }
 
     function renderUserProducts() {
@@ -360,7 +527,7 @@
       return `
         <div class="card overflow-hidden">
           <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
-            <h2 class="font-bold text-sm">المنتجات المتوفرة للسحب الفوري</h2>
+            <h2 class="font-bold text-sm">المنتجات المتوفرة — حوّل على الماستر وارفع إثبات التحويل</h2>
             <span class="text-xs text-stone-500">${state.products.length} منتجات</span>
           </div>
           <div class="overflow-x-auto">
@@ -400,8 +567,8 @@
                         </div>
                       </td>
                       <td class="py-3.5 px-5 text-left">
-                        <button onclick="pullOrder('${p.id}')" ${outOfStock ? 'disabled' : ''} class="btn-primary px-4 py-1.5 text-xs font-medium">
-                          ${outOfStock ? 'نفد المخزون' : 'سحب فوري'}
+                        <button onclick="openBuyModal('${p.id}')" ${outOfStock ? 'disabled' : ''} class="btn-primary px-4 py-1.5 text-xs font-medium">
+                          ${outOfStock ? 'نفد المخزون' : 'شراء'}
                         </button>
                       </td>
                     </tr>
@@ -409,66 +576,6 @@
                 }).join('')}
               </tbody>
             </table>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderUserApi() {
-      const baseUrl = window.location.origin;
-      const key = state.apiSettings.apiKey || '';
-      return `
-        <div class="space-y-5">
-          <div class="card p-5 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h2 class="font-bold text-sm">بيانات الربط البرمجي (REST API)</h2>
-                <p class="text-xs text-stone-500 mt-0.5">استخدم هذه البيانات لربط متجرك أو نظامك وسحب الحسابات تلقائياً</p>
-              </div>
-              <span class="text-xs px-2.5 py-1 rounded ${state.apiSettings.enabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}">
-                ${state.apiSettings.enabled ? 'مفعّل' : 'متوقف'}
-              </span>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs text-stone-500 mb-1">رابط الخادم (Base URL)</label>
-                <div class="flex gap-2">
-                  <input type="text" readonly value="${baseUrl}" class="input-field mono text-xs bg-stone-50" dir="ltr" />
-                  <button onclick="copyText('${baseUrl}')" class="btn-secondary px-3 text-xs">نسخ</button>
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs text-stone-500 mb-1">مفتاح الربط (Header: x-api-key)</label>
-                <div class="flex gap-2">
-                  <input type="text" readonly value="${key}" class="input-field mono text-xs bg-stone-50" dir="ltr" />
-                  <button onclick="copyText('${key}')" class="btn-secondary px-3 text-xs">نسخ</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card p-5 space-y-4">
-            <h3 class="font-bold text-sm">نقاط الاتصال (Endpoints)</h3>
-
-            <div class="space-y-2">
-              <div class="text-xs font-semibold text-stone-800">1. جلب المنتجات والمخزون المتوفر</div>
-              <pre class="bg-stone-900 text-stone-100 p-3.5 rounded-lg text-xs mono overflow-x-auto" dir="ltr">GET ${baseUrl}/api/v1/products
-Headers: { "x-api-key": "${key}" }</pre>
-            </div>
-
-            <div class="space-y-2">
-              <div class="text-xs font-semibold text-stone-800">2. إنشاء طلب وسحب الحسابات فوراً</div>
-              <pre class="bg-stone-900 text-stone-100 p-3.5 rounded-lg text-xs mono overflow-x-auto" dir="ltr">POST ${baseUrl}/api/v1/orders
-Headers: {
-  "Content-Type": "application/json",
-  "x-api-key": "${key}"
-}
-Body: {
-  "product_id": "${state.products[0]?.id || 'prod_1'}",
-  "quantity": 1
-}</pre>
-            </div>
           </div>
         </div>
       `;
@@ -491,7 +598,7 @@ Body: {
               <thead class="bg-stone-50 text-stone-600 text-xs border-b border-stone-200">
                 <tr>
                   <th class="py-3 px-5 font-medium">المنتج</th>
-                  <th class="py-3 px-4 font-medium">المعرّف (API ID)</th>
+                  <th class="py-3 px-4 font-medium">المعرّف</th>
                   <th class="py-3 px-4 font-medium">المدة</th>
                   <th class="py-3 px-4 font-medium">السعر</th>
                   <th class="py-3 px-4 font-medium">المخزون</th>
@@ -528,71 +635,84 @@ Body: {
     }
 
     function renderAdminSettings() {
-      const baseUrl = window.location.origin;
+      const pay = state.paymentSettings || {};
+      const customers = state.customers || [];
       return `
         <div class="grid md:grid-cols-2 gap-5">
           <div class="card p-5 space-y-4">
-            <div class="flex items-center justify-between border-b border-stone-200 pb-3">
-              <div>
-                <h3 class="font-bold text-sm">إعدادات الـ API</h3>
-                <p class="text-xs text-stone-500 mt-0.5">التحكم بوصول التاجر للربط البرمجي</p>
-              </div>
-              <button onclick="toggleApiStatus()" class="btn-secondary px-3 py-1.5 text-xs font-medium">
-                ${state.apiSettings.enabled ? 'إيقاف الـ API' : 'تفعيل الـ API'}
-              </button>
+            <div class="border-b border-stone-200 pb-3">
+              <h3 class="font-bold text-sm">بيانات الدفع (ماستركارد)</h3>
+              <p class="text-xs text-stone-500 mt-0.5">تظهر للمشترين في نافذة الشراء — ضع رقم البطاقة هنا</p>
             </div>
-
             <div>
-              <label class="block text-xs text-stone-500 mb-1">رابط الـ API الرئيسي</label>
-              <input type="text" readonly value="${baseUrl}/api/v1" class="input-field mono text-xs bg-stone-50" dir="ltr" />
+              <label class="block text-xs font-medium text-stone-700 mb-1">رقم بطاقة الماستركارد</label>
+              <input id="payCardNumber" type="text" value="${escapeHtml(pay.cardNumber || '')}" placeholder="مثال: 5213 0000 0000 0000" class="input-field mono" dir="ltr" />
             </div>
-
             <div>
-              <label class="block text-xs text-stone-500 mb-1">مفتاح الـ API الحالي</label>
-              <div class="flex gap-2">
-                <input type="text" readonly value="${state.apiSettings.apiKey}" class="input-field mono text-xs bg-stone-50" dir="ltr" />
-                <button onclick="copyText('${state.apiSettings.apiKey}')" class="btn-secondary px-3 text-xs">نسخ</button>
-              </div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">اسم صاحب البطاقة</label>
+              <input id="payCardHolder" type="text" value="${escapeHtml(pay.cardHolder || '')}" placeholder="الاسم كما يظهر على البطاقة" class="input-field" />
             </div>
-
-            <button onclick="regenerateApiKey()" class="btn-secondary w-full py-2 text-xs font-medium">توليد مفتاح API جديد</button>
+            <button onclick="savePaymentSettings()" class="btn-primary w-full py-2 text-xs font-medium">حفظ بيانات الدفع</button>
           </div>
 
           <div class="card p-5 space-y-4">
             <div class="border-b border-stone-200 pb-3">
-              <h3 class="font-bold text-sm">تغيير كلمات المرور</h3>
-              <p class="text-xs text-stone-500 mt-0.5">اترك الحقل فارغاً إذا لم ترغب بتغييره</p>
+              <h3 class="font-bold text-sm">تغيير كلمة مرور الإدارة</h3>
+              <p class="text-xs text-stone-500 mt-0.5">اترك الحقل فارغاً إذا لم ترغب بتغييرها</p>
             </div>
-
             <div>
               <label class="block text-xs font-medium text-stone-700 mb-1">كلمة مرور الإدارة الجديدة (admin)</label>
               <input id="newAdminPass" type="password" class="input-field" />
             </div>
+            <button onclick="savePasswords()" class="btn-primary w-full py-2 text-xs font-medium">حفظ كلمة المرور</button>
+          </div>
 
-            <div>
-              <label class="block text-xs font-medium text-stone-700 mb-1">كلمة مرور التاجر الجديدة (user)</label>
-              <input id="newUserPass" type="password" class="input-field" />
+          <div class="card p-5 space-y-3 md:col-span-2">
+            <div class="border-b border-stone-200 pb-3">
+              <h3 class="font-bold text-sm">المستخدمون المسجلون (${customers.length})</h3>
+              <p class="text-xs text-stone-500 mt-0.5">حسابات المشترين التي سُجّلت من صفحة التسجيل</p>
             </div>
-
-            <button onclick="savePasswords()" class="btn-primary w-full py-2 text-xs font-medium">حفظ كلمات المرور</button>
+            ${customers.length ? `
+              <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                ${customers.map(c => `
+                  <div class="bg-stone-50 border border-stone-200 rounded px-3 py-2 text-xs flex items-center justify-between gap-2">
+                    <span class="mono font-medium" dir="ltr">${escapeHtml(c.username)}</span>
+                    <span class="text-stone-500">${new Date(c.createdAt).toLocaleDateString('ar-IQ')}</span>
+                  </div>
+                `).join('')}
+              </div>` : `<div class="text-xs text-stone-400">لا يوجد مستخدمون مسجلون بعد.</div>`}
           </div>
         </div>
       `;
     }
 
     // --- SHARED ORDERS TABLE ---
+    function orderStatusBadge(o) {
+      const st = o.status || (o.items && o.items.length ? 'confirmed' : 'pending_payment');
+      if (st === 'confirmed') return `<span class="text-[11px] px-2 py-0.5 rounded bg-green-100 text-green-800 border border-green-200">تم التأكيد والتسليم</span>`;
+      if (st === 'rejected') return `<span class="text-[11px] px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-200">مرفوض</span>`;
+      return `<span class="text-[11px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">بانتظار تأكيد الدفع</span>`;
+    }
+
+    function orderStatusLabel(o) {
+      const st = o.status || (o.items && o.items.length ? 'confirmed' : 'pending_payment');
+      return st === 'confirmed' ? 'تم التأكيد' : st === 'rejected' ? 'مرفوض' : 'بانتظار التأكيد';
+    }
+
     function renderOrdersTable(isAdmin) {
       const totalAmount = state.orders.reduce((sum, o) => sum + o.totalPrice, 0);
       const unsettledOrders = state.orders.filter(o => !o.settled);
       const debtAmount = unsettledOrders.reduce((sum, o) => sum + o.totalPrice, 0);
       const settlements = state.settlements || [];
+      const pendingOrders = state.orders.filter(o => (o.status || 'pending_payment') === 'pending_payment');
       return `
         <div class="card overflow-hidden">
           <div class="px-5 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 class="font-bold text-sm">سجل الطلبات المسحوبة (${state.orders.length})</h2>
+              <h2 class="font-bold text-sm">${isAdmin ? 'سجل الطلبات' : 'طلباتي'} (${state.orders.length})</h2>
               <p class="text-xs text-stone-500 mt-0.5">إجمالي قيمة الطلبات: <span class="mono font-semibold text-stone-900">$${totalAmount.toFixed(2)}</span></p>
-              <p class="text-xs mt-1">الدين المستحق: <span class="mono font-bold ${debtAmount > 0 ? 'text-red-700' : 'text-green-700'}">$${debtAmount.toFixed(2)}</span> <span class="text-stone-500">(${unsettledOrders.length} طلب غير مسدد)</span></p>
+              ${isAdmin ? `<p class="text-xs mt-1">الدين المستحق (طلبات قديمة غير مسددة): <span class="mono font-bold ${debtAmount > 0 ? 'text-red-700' : 'text-green-700'}">$${debtAmount.toFixed(2)}</span> <span class="text-stone-500">(${unsettledOrders.length} طلب غير مسدد)</span></p>` : ''}
+              ${pendingOrders.length ? `<p class="text-xs mt-1 text-amber-700 font-medium">${pendingOrders.length} طلب بانتظار تأكيد الدفع</p>` : ''}
             </div>
             <div class="flex items-center gap-2">
               ${isAdmin && debtAmount > 0 ? `<button onclick="settleAllDebts()" class="btn-primary px-3.5 py-1.5 text-xs font-medium">تسوية الكل — $${debtAmount.toFixed(2)}</button>` : ''}
@@ -601,18 +721,19 @@ Body: {
           </div>
 
           ${!state.orders.length
-            ? `<div class="p-8 text-center text-sm text-stone-500">لا توجد طلبات مسجلة حتى الآن.</div>`
+            ? `<div class="p-8 text-center text-sm text-stone-500">${isAdmin ? 'لا توجد طلبات مسجلة حتى الآن.' : 'لا توجد طلبات بعد — اختر منتجاً من تبويب المنتجات.'}</div>`
             : `<div class="overflow-x-auto">
                 <table class="w-full text-sm text-right">
                   <thead class="bg-stone-50 text-stone-600 text-xs border-b border-stone-200">
                     <tr>
                       <th class="py-3 px-4 font-medium">رقم الطلب</th>
+                      ${isAdmin ? `<th class="py-3 px-4 font-medium">المشتري</th>` : ''}
                       <th class="py-3 px-4 font-medium">المنتج</th>
                       <th class="py-3 px-3 font-medium">الكمية</th>
                       <th class="py-3 px-3 font-medium">الإجمالي</th>
-                      <th class="py-3 px-3 font-medium">الحالة</th>
-                      <th class="py-3 px-3 font-medium">المصدر</th>
-                      <th class="py-3 px-4 font-medium">البيانات والملاحظات</th>
+                      <th class="py-3 px-3 font-medium">حالة الدفع</th>
+                      <th class="py-3 px-4 font-medium">إثبات التحويل</th>
+                      <th class="py-3 px-4 font-medium">الحسابات</th>
                       <th class="py-3 px-4 font-medium">التاريخ</th>
                     </tr>
                   </thead>
@@ -620,19 +741,21 @@ Body: {
                     ${state.orders.map(o => {
                       const shown = !!revealedOrders[o.id];
                       const dateStr = new Date(o.createdAt).toLocaleString('ar-IQ', { dateStyle: 'short', timeStyle: 'short' });
+                      const pending = (o.status || 'pending_payment') === 'pending_payment';
+                      const hasItems = o.items && o.items.length;
                       return `
                         <tr class="align-top">
                           <td class="py-3.5 px-4 mono text-xs font-medium">${o.id}</td>
+                          ${isAdmin ? `<td class="py-3.5 px-4 mono text-xs" dir="ltr">${escapeHtml(o.buyer || '—')}</td>` : ''}
                           <td class="py-3.5 px-4 font-medium text-stone-900">${escapeHtml(o.productName)}</td>
                           <td class="py-3.5 px-3 mono text-xs">${o.quantity}</td>
                           <td class="py-3.5 px-3 mono text-xs font-medium">$${o.totalPrice.toFixed(2)}</td>
-                          <td class="py-3.5 px-3">${o.settled
-                            ? `<span class="text-[11px] px-2 py-0.5 rounded bg-green-100 text-green-800 border border-green-200">مسدد</span>`
-                            : `<span class="text-[11px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">غير مسدد</span>`}</td>
-                          <td class="py-3.5 px-3">
-                            <span class="mono text-[11px] px-2 py-0.5 rounded bg-stone-100 border border-stone-200">${o.source}</span>
+                          <td class="py-3.5 px-3">${orderStatusBadge(o)}</td>
+                          <td class="py-3.5 px-4">
+                            ${o.receiptImage ? `<img src="${o.receiptImage}" onclick="openReceiptModal('${o.id}')" class="h-16 w-auto rounded border border-stone-200 cursor-pointer" />` : `<span class="text-xs text-stone-400">—</span>`}
                           </td>
                           <td class="py-3.5 px-4">
+                            ${hasItems ? `
                             <div class="flex items-center gap-2 mb-1.5">
                               <button onclick="toggleOrderReveal('${o.id}')" class="btn-secondary px-2.5 py-1 text-xs">
                                 ${shown ? 'إخفاء' : 'عرض الحسابات'}
@@ -648,10 +771,20 @@ Body: {
                                   </div>
                                 `).join('')}
                               </div>
-                            ` : ''}
+                            ` : ''}` : `<span class="text-xs text-stone-400">${pending ? 'يُسلَّم بعد تأكيد الدفع' : '—'}</span>`}
                           </td>
                           <td class="py-3.5 px-4 text-xs text-stone-500 whitespace-nowrap">${dateStr}</td>
                         </tr>
+                        ${isAdmin && pending ? `
+                        <tr class="bg-amber-50/60">
+                          <td colspan="9" class="py-2.5 px-4">
+                            <div class="flex items-center gap-2 flex-wrap">
+                              <span class="text-xs text-amber-800">تحقق من إثبات التحويل ثم:</span>
+                              <button onclick="confirmOrder('${o.id}')" class="btn-primary px-3 py-1.5 text-xs font-medium">تأكيد الدفع وتسليم الحساب</button>
+                              <button onclick="rejectOrder('${o.id}')" class="btn-secondary px-3 py-1.5 text-xs text-red-700">رفض الطلب</button>
+                            </div>
+                          </td>
+                        </tr>` : ''}
                       `;
                     }).join('')}
                   </tbody>
@@ -799,43 +932,31 @@ Body: {
       }
     }
 
-    async function toggleApiStatus() {
-      try {
-        await apiRequest('/api/admin/settings', {
-          method: 'POST',
-          body: JSON.stringify({ enabled: !state.apiSettings.enabled })
-        });
-        await loadState();
-      } catch (err) {
-        alert(err.message);
-      }
-    }
-
-    async function regenerateApiKey() {
-      if (!confirm('سيتم إيقاف المفتاح القديم فوراً وتوليد مفتاح جديد. هل تريد المتابعة؟')) return;
-      try {
-        await apiRequest('/api/admin/settings', {
-          method: 'POST',
-          body: JSON.stringify({ regenerateKey: true })
-        });
-        await loadState();
-      } catch (err) {
-        alert(err.message);
-      }
-    }
-
     async function savePasswords() {
       const adminPassword = document.getElementById('newAdminPass').value;
-      const userPassword = document.getElementById('newUserPass').value;
-      if (!adminPassword && !userPassword) return;
+      if (!adminPassword) return;
       try {
         await apiRequest('/api/admin/settings', {
           method: 'POST',
-          body: JSON.stringify({ adminPassword, userPassword })
+          body: JSON.stringify({ adminPassword })
         });
         document.getElementById('newAdminPass').value = '';
-        document.getElementById('newUserPass').value = '';
-        alert('تم تحديث كلمات المرور بنجاح');
+        alert('تم تحديث كلمة مرور الإدارة بنجاح');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function savePaymentSettings() {
+      const cardNumber = document.getElementById('payCardNumber').value;
+      const cardHolder = document.getElementById('payCardHolder').value;
+      try {
+        await apiRequest('/api/admin/settings', {
+          method: 'POST',
+          body: JSON.stringify({ paymentSettings: { cardNumber, cardHolder } })
+        });
+        await loadState();
+        alert('تم حفظ بيانات الدفع');
       } catch (err) {
         alert(err.message);
       }
@@ -855,6 +976,34 @@ Body: {
       }
     }
 
+    async function confirmOrder(orderId) {
+      if (!confirm('تأكيد استلام الدفع وتسليم الحسابات للمشتري؟')) return;
+      try {
+        const data = await apiRequest(`/api/admin/orders/${orderId}/confirm`, { method: 'POST', body: JSON.stringify({}) });
+        await loadState();
+        if (data.order && data.order.items) openDeliveryModal(data.order);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function rejectOrder(orderId) {
+      if (!confirm('رفض هذا الطلب؟ لن يتم تسليم أي حساب.')) return;
+      try {
+        await apiRequest(`/api/admin/orders/${orderId}/reject`, { method: 'POST', body: JSON.stringify({}) });
+        await loadState();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function openReceiptModal(orderId) {
+      const order = state.orders.find(o => o.id === orderId);
+      if (!order || !order.receiptImage) return;
+      document.getElementById('receiptModalImg').src = order.receiptImage;
+      document.getElementById('receiptModal').classList.remove('hidden');
+    }
+
     function toggleOrderReveal(orderId) {
       revealedOrders[orderId] = !revealedOrders[orderId];
       renderContent();
@@ -868,10 +1017,10 @@ Body: {
     }
 
     function exportOrdersCSV() {
-      const rows = [['Order ID', 'Product', 'Quantity', 'Total Price', 'Source', 'Settled', 'Accounts & Notes', 'Date']];
+      const rows = [['Order ID', 'Buyer', 'Product', 'Quantity', 'Total Price', 'Payment Status', 'Settled', 'Accounts & Notes', 'Date']];
       state.orders.forEach(o => {
-        const details = o.items.map(i => i.note ? `${i.account} (${i.note})` : i.account).join(' ; ');
-        rows.push([o.id, o.productName, o.quantity, o.totalPrice, o.source, o.settled ? 'مسدد' : 'غير مسدد', details, o.createdAt]);
+        const details = (o.items || []).map(i => i.note ? `${i.account} (${i.note})` : i.account).join(' ; ');
+        rows.push([o.id, o.buyer || '', o.productName, o.quantity, o.totalPrice, orderStatusLabel(o), o.settled ? 'مسدد' : 'غير مسدد', details, o.createdAt]);
       });
       const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -901,6 +1050,23 @@ Body: {
     function escapeJs(str) {
       return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     }
+
+    document.getElementById('receiptInput').addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      const preview = document.getElementById('receiptPreview');
+      const errBox = document.getElementById('buyError');
+      receiptDataUrl = '';
+      preview.classList.add('hidden');
+      if (!file) return;
+      try {
+        receiptDataUrl = await fileToCompressedDataUrl(file);
+        preview.src = receiptDataUrl;
+        preview.classList.remove('hidden');
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.classList.remove('hidden');
+      }
+    });
 
     initApp();
   </script>

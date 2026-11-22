@@ -6,10 +6,12 @@ const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'database.json');
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+const DB_FILE = path.join(DATA_DIR, 'database.json');
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 
 // Serve index.html directly from the root directory
 app.get('/', (req, res) => {
@@ -22,10 +24,12 @@ const defaultDB = {
     admin: { username: 'admin', password: process.env.ADMIN_PASSWORD || '1234', role: 'admin' },
     user: { username: 'user', password: process.env.USER_PASSWORD || '1234', role: 'user' }
   },
-  apiSettings: {
-    enabled: true,
-    apiKey: 'ad_live_' + crypto.randomBytes(16).toString('hex')
+  paymentSettings: {
+    cardType: 'MasterCard',
+    cardNumber: '',
+    cardHolder: ''
   },
+  customers: [],
   products: [
     {
       id: 'prod_1',
@@ -71,6 +75,13 @@ function readDB() {
     }
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
     if (!Array.isArray(data.settlements)) data.settlements = [];
+    if (!data.paymentSettings) data.paymentSettings = { cardType: 'MasterCard', cardNumber: '', cardHolder: '' };
+    if (!Array.isArray(data.customers)) data.customers = [];
+    if (data.apiSettings) delete data.apiSettings;
+    (data.orders || []).forEach(o => {
+      if (!o.status) o.status = (o.items && o.items.length) ? 'confirmed' : 'pending_payment';
+      if (typeof o.buyer !== 'string') o.buyer = '';
+    });
     (data.orders || []).forEach(o => { if (typeof o.settled !== 'boolean') o.settled = false; });
     return data;
   } catch (err) {
@@ -110,18 +121,6 @@ function authMiddleware(requiredRole) {
   };
 }
 
-function apiKeyMiddleware(req, res, next) {
-  const db = readDB();
-  if (!db.apiSettings.enabled) {
-    return res.status(403).json({ success: false, error: 'تم إيقاف خدمة API من قبل الإدارة' });
-  }
-  const key = req.headers['x-api-key'] || req.query.api_key;
-  if (!key || key !== db.apiSettings.apiKey) {
-    return res.status(401).json({ success: false, error: 'مفتاح API غير صالح' });
-  }
-  next();
-}
-
 // --- AUTH ROUTES ---
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body || {};
@@ -133,16 +132,63 @@ app.post('/api/auth/login', (req, res) => {
     u => u.username.toLowerCase() === cleanUser && u.password === cleanPass
   );
 
-  if (!found) {
-    return res.status(401).json({ success: false, error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+  if (found) {
+    const token = createSession(found);
+    return res.json({
+      success: true,
+      token,
+      user: { username: found.username, role: found.role }
+    });
   }
 
-  const token = createSession(found);
-  res.json({
-    success: true,
-    token,
-    user: { username: found.username, role: found.role }
+  const customer = (db.customers || []).find(c => c.username === cleanUser);
+  if (customer && customer.passwordHash === hashPassword(cleanPass, customer.salt)) {
+    const token = createSession({ username: customer.username, role: 'customer' });
+    return res.json({
+      success: true,
+      token,
+      user: { username: customer.username, role: 'customer' }
+    });
+  }
+
+  return res.status(401).json({ success: false, error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+});
+
+function hashPassword(password, salt) {
+  return crypto.createHash('sha256').update(salt + ':' + password).digest('hex');
+}
+
+// --- CUSTOMER REGISTRATION ---
+app.post('/api/auth/register', (req, res) => {
+  const { username, password } = req.body || {};
+  const cleanUser = String(username || '').trim().toLowerCase();
+  const cleanPass = String(password || '').trim();
+
+  if (!/^[a-z0-9_.]{3,20}$/.test(cleanUser)) {
+    return res.status(400).json({ success: false, error: 'اسم المستخدم يجب أن يكون 3-20 حرفاً (أحرف إنجليزية وأرقام ونقطة و _)' });
+  }
+  if (cleanPass.length < 4) {
+    return res.status(400).json({ success: false, error: 'كلمة المرور قصيرة — 4 أحرف على الأقل' });
+  }
+
+  const db = readDB();
+  const taken = Object.values(db.users).some(u => u.username.toLowerCase() === cleanUser)
+    || (db.customers || []).some(c => c.username === cleanUser);
+  if (taken) {
+    return res.status(400).json({ success: false, error: 'اسم المستخدم محجوز، جرّب اسماً آخر' });
+  }
+
+  const salt = crypto.randomBytes(8).toString('hex');
+  db.customers.push({
+    username: cleanUser,
+    passwordHash: hashPassword(cleanPass, salt),
+    salt,
+    createdAt: new Date().toISOString()
   });
+  writeDB(db);
+
+  const token = createSession({ username: cleanUser, role: 'customer' });
+  res.json({ success: true, token, user: { username: cleanUser, role: 'customer' } });
 });
 
 app.get('/api/auth/me', authMiddleware(), (req, res) => {
@@ -164,24 +210,41 @@ app.get('/api/portal/state', authMiddleware(), (req, res) => {
     stock: isAdmin ? p.stock : undefined
   }));
 
+  let orders = db.orders;
+  if (!isAdmin) {
+    orders = db.orders.filter(o => o.buyer === req.user.username || (req.user.role === 'user' && !o.buyer));
+  }
+  const safeOrders = orders.map(o => ({
+    ...o,
+    receiptImage: (isAdmin || o.buyer === req.user.username) ? o.receiptImage : undefined
+  }));
+
   res.json({
     success: true,
     products,
-    orders: db.orders,
+    orders: safeOrders,
     settlements: db.settlements || [],
-    apiSettings: db.apiSettings,
-    users: isAdmin ? {
-      adminUsername: db.users.admin.username,
-      userUsername: db.users.user.username
-    } : undefined
+    paymentSettings: db.paymentSettings || { cardType: 'MasterCard', cardNumber: '', cardHolder: '' },
+    customers: isAdmin ? (db.customers || []).map(c => ({ username: c.username, createdAt: c.createdAt })) : undefined
   });
 });
 
-// Pull Order (User via Web Portal)
+// Buy Order with payment receipt (Customer via Web Portal)
+// Buyer transfers to the MasterCard and uploads a transfer screenshot;
+// stock is pulled only after the admin confirms the payment.
 app.post('/api/portal/orders', authMiddleware(), (req, res) => {
-  const { productId, quantity } = req.body || {};
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ success: false, error: 'حساب الإدارة لا يمكنه الشراء' });
+  }
+  const { productId, quantity, receiptImage } = req.body || {};
   const qty = parseInt(quantity, 10) || 1;
   if (qty < 1) return res.status(400).json({ success: false, error: 'الكمية غير صحيحة' });
+  if (!receiptImage || typeof receiptImage !== 'string' || !receiptImage.startsWith('data:image/')) {
+    return res.status(400).json({ success: false, error: 'يرجى رفع صورة إثبات التحويل' });
+  }
+  if (receiptImage.length > 5 * 1024 * 1024) {
+    return res.status(400).json({ success: false, error: 'صورة الإثبات كبيرة جداً' });
+  }
 
   const db = readDB();
   const product = db.products.find(p => p.id === productId);
@@ -190,7 +253,6 @@ app.post('/api/portal/orders', authMiddleware(), (req, res) => {
     return res.status(400).json({ success: false, error: 'المخزون المتوفر غير كافٍ' });
   }
 
-  const pulledItems = product.stock.splice(0, qty);
   const order = {
     id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
     productId: product.id,
@@ -200,14 +262,17 @@ app.post('/api/portal/orders', authMiddleware(), (req, res) => {
     unitPrice: product.price,
     totalPrice: Number((product.price * qty).toFixed(2)),
     source: 'WEB',
+    buyer: req.user.username,
+    status: 'pending_payment',
+    receiptImage,
     settled: false,
-    items: pulledItems,
+    items: [],
     createdAt: new Date().toISOString()
   };
 
   db.orders.unshift(order);
   writeDB(db);
-  res.json({ success: true, order });
+  res.json({ success: true, order: { ...order, receiptImage: undefined } });
 });
 
 // Admin: Create or Update Product
@@ -286,26 +351,24 @@ app.delete('/api/admin/products/:id/stock/:index', authMiddleware('admin'), (req
   res.json({ success: true });
 });
 
-// Admin: Update API Settings & Passwords
+// Admin: Update MasterCard Payment Settings & Admin Password
 app.post('/api/admin/settings', authMiddleware('admin'), (req, res) => {
-  const { enabled, regenerateKey, adminPassword, userPassword } = req.body || {};
+  const { adminPassword, paymentSettings } = req.body || {};
   const db = readDB();
 
-  if (typeof enabled === 'boolean') {
-    db.apiSettings.enabled = enabled;
-  }
-  if (regenerateKey) {
-    db.apiSettings.apiKey = 'ad_live_' + crypto.randomBytes(16).toString('hex');
-  }
   if (adminPassword && String(adminPassword).trim().length >= 3) {
     db.users.admin.password = String(adminPassword).trim();
   }
-  if (userPassword && String(userPassword).trim().length >= 3) {
-    db.users.user.password = String(userPassword).trim();
+  if (paymentSettings && typeof paymentSettings === 'object') {
+    db.paymentSettings = {
+      cardType: 'MasterCard',
+      cardNumber: String(paymentSettings.cardNumber || '').trim(),
+      cardHolder: String(paymentSettings.cardHolder || '').trim()
+    };
   }
 
   writeDB(db);
-  res.json({ success: true, apiSettings: db.apiSettings });
+  res.json({ success: true, paymentSettings: db.paymentSettings });
 });
 
 // Admin: Settle all outstanding debt (mark every unsettled order settled)
@@ -331,134 +394,41 @@ app.post('/api/admin/settle', authMiddleware('admin'), (req, res) => {
   res.json({ success: true, settledCount: unsettled.length, amount, settlement });
 });
 
-// --- PUBLIC EXTERNAL REST API (FOR RESELLER INTEGRATION) ---
-app.get('/api/v1/products', apiKeyMiddleware, (req, res) => {
-  const db = readDB();
-  const list = db.products.map(p => ({
-    id: p.id,
-    name: p.name,
-    duration: p.duration,
-    price: p.price,
-    available_stock: p.stock.length
-  }));
-  res.json({ success: true, products: list });
-});
-
-app.get('/api/v1/products/:id', apiKeyMiddleware, (req, res) => {
-  const db = readDB();
-  const product = db.products.find(p => p.id === req.params.id);
-  if (!product) {
-    return res.status(404).json({ success: false, error: 'Product not found' });
-  }
-  res.json({
-    success: true,
-    product: {
-      id: product.id,
-      name: product.name,
-      duration: product.duration,
-      price: product.price,
-      available_stock: product.stock.length
-    }
-  });
-});
-
-app.get('/api/v1/stock/:id', apiKeyMiddleware, (req, res) => {
-  const db = readDB();
-  const product = db.products.find(p => p.id === req.params.id);
-  if (!product) {
-    return res.status(404).json({ success: false, error: 'Product not found' });
-  }
-  res.json({
-    success: true,
-    product_id: product.id,
-    product: product.name,
-    available_stock: product.stock.length
-  });
-});
-
-app.post('/api/v1/orders', apiKeyMiddleware, (req, res) => {
-  const { product_id, quantity } = req.body || {};
-  const qty = parseInt(quantity, 10) || 1;
-  if (!product_id || qty < 1) {
-    return res.status(400).json({ success: false, error: 'Invalid product_id or quantity' });
-  }
-
-  const db = readDB();
-  const product = db.products.find(p => p.id === product_id);
-  if (!product) {
-    return res.status(404).json({ success: false, error: 'Product not found' });
-  }
-  if (product.stock.length < qty) {
-    return res.status(400).json({ success: false, error: 'Insufficient stock', available: product.stock.length });
-  }
-
-  const pulledItems = product.stock.splice(0, qty);
-  const order = {
-    id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
-    productId: product.id,
-    productName: product.name,
-    duration: product.duration,
-    quantity: qty,
-    unitPrice: product.price,
-    totalPrice: Number((product.price * qty).toFixed(2)),
-    source: 'API',
-    settled: false,
-    items: pulledItems,
-    createdAt: new Date().toISOString()
-  };
-
-  db.orders.unshift(order);
-  writeDB(db);
-
-  res.json({
-    success: true,
-    order_id: order.id,
-    product: order.productName,
-    quantity: order.quantity,
-    total_price: order.totalPrice,
-    items: order.items,
-    created_at: order.createdAt
-  });
-});
-
-app.get('/api/v1/orders', apiKeyMiddleware, (req, res) => {
-  const db = readDB();
-  res.json({
-    success: true,
-    orders: db.orders.map(o => ({
-      order_id: o.id,
-      product: o.productName,
-      quantity: o.quantity,
-      total_price: o.totalPrice,
-      source: o.source,
-      settled: !!o.settled,
-      items: o.items,
-      created_at: o.createdAt
-    }))
-  });
-});
-
-app.get('/api/v1/orders/:id', apiKeyMiddleware, (req, res) => {
+// Admin: Confirm payment -> pull stock and deliver accounts to the buyer
+app.post('/api/admin/orders/:id/confirm', authMiddleware('admin'), (req, res) => {
   const db = readDB();
   const order = db.orders.find(o => o.id === req.params.id);
-  if (!order) {
-    return res.status(404).json({ success: false, error: 'Order not found' });
+  if (!order) return res.status(404).json({ success: false, error: 'الطلب غير موجود' });
+  if (order.status !== 'pending_payment') {
+    return res.status(400).json({ success: false, error: 'هذا الطلب ليس بانتظار التأكيد' });
   }
-  res.json({
-    success: true,
-    order: {
-      order_id: order.id,
-      product: order.productName,
-      quantity: order.quantity,
-      total_price: order.totalPrice,
-      source: order.source,
-      settled: !!order.settled,
-      items: order.items,
-      created_at: order.createdAt
-    }
-  });
+  const product = db.products.find(p => p.id === order.productId);
+  if (!product || product.stock.length < order.quantity) {
+    return res.status(400).json({ success: false, error: 'المخزون المتوفر غير كافٍ لتسليم هذا الطلب' });
+  }
+  order.items = product.stock.splice(0, order.quantity);
+  order.status = 'confirmed';
+  order.settled = true;
+  order.settledAt = new Date().toISOString();
+  order.confirmedBy = req.user.username;
+  writeDB(db);
+  res.json({ success: true, order });
+});
+
+// Admin: Reject payment (no stock is touched)
+app.post('/api/admin/orders/:id/reject', authMiddleware('admin'), (req, res) => {
+  const db = readDB();
+  const order = db.orders.find(o => o.id === req.params.id);
+  if (!order) return res.status(404).json({ success: false, error: 'الطلب غير موجود' });
+  if (order.status !== 'pending_payment') {
+    return res.status(400).json({ success: false, error: 'هذا الطلب ليس بانتظار التأكيد' });
+  }
+  order.status = 'rejected';
+  writeDB(db);
+  res.json({ success: true });
 });
 
 app.listen(PORT, () => {
   console.log(`Alpha Digital Portal running on port ${PORT}`);
+  console.log('Database file:', DB_FILE);
 });
