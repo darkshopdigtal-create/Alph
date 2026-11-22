@@ -13,96 +13,107 @@
     html { scroll-behavior: smooth; }
     body {
       font-family: 'IBM Plex Sans Arabic', sans-serif;
-      background: #FAF8F4;
-      color: #171412;
+      background: #F3F2EE;
+      color: #172232;
       min-height: 100vh;
     }
-    ::selection { background: #DDD6FE; color: #2E1065; }
+    ::selection { background: #FFF1CF; color: #172232; }
     .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
     .card {
-      background: #FFFFFF;
-      border: 1px solid #EDE9E0;
-      border-radius: 22px;
-      box-shadow: 0 1px 2px rgba(23,20,18,0.04);
+      background: #FFFEFA;
+      border: 1px solid #E1E8F4;
+      border-radius: 16px;
+      box-shadow: 0 1px 2px rgba(23,34,50,0.05);
     }
     .btn-primary {
-      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
-      color: #FFFFFF;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(109,40,217,0.28);
-      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      background: #F1C15C;
+      color: #172232;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(241,193,92,0.35);
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(109,40,217,0.36); filter: brightness(1.06); }
+    .btn-primary:hover:not(:disabled) { background: #EFB84A; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(241,193,92,0.45); }
     .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
     .btn-secondary {
       background: #FFFFFF;
-      color: #171412;
-      border: 1px solid #E2DED4;
-      border-radius: 12px;
+      color: #172232;
+      border: 1px solid #E1E8F4;
+      border-radius: 10px;
       transition: background 0.15s ease, border-color 0.15s ease;
     }
-    .btn-secondary:hover { background: #F4F1EA; border-color: #D8D2C4; }
+    .btn-secondary:hover { background: #F7F9FD; border-color: #C9D4E6; }
     .input-field {
       background: #FFFFFF;
-      border: 1px solid #E2DED4;
-      border-radius: 12px;
-      padding: 0.7rem 0.85rem;
+      border: 1px solid #E1E8F4;
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
       font-size: 0.9rem;
       width: 100%;
       outline: none;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .input-field:focus { border-color: #7C3AED; box-shadow: 0 0 0 3px rgba(124,58,237,0.14); }
-    .hero-gradient {
-      background:
-        radial-gradient(600px 300px at 85% -10%, rgba(219,39,119,0.35), transparent 60%),
-        radial-gradient(500px 260px at 10% 110%, rgba(124,58,237,0.45), transparent 60%),
-        linear-gradient(135deg, #17102E 0%, #2A1650 55%, #3B1470 100%);
+    .input-field:focus { border-color: #F1C15C; box-shadow: 0 0 0 3px rgba(241,193,92,0.30); }
+    .logo-tile {
+      background: #FFFFFF;
+      color: #21272B;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
     }
-    .hero-glow { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; }
-    .glow-a { width: 260px; height: 260px; background: rgba(124,58,237,0.5); top: -90px; left: -60px; }
-    .glow-b { width: 220px; height: 220px; background: rgba(219,39,119,0.35); bottom: -100px; right: -40px; }
     .brand-panel {
-      background:
-        radial-gradient(420px 240px at 90% -10%, rgba(219,39,119,0.4), transparent 60%),
-        linear-gradient(160deg, #1B1238 0%, #2A1650 60%, #3B1470 100%);
+      background: linear-gradient(165deg, #21272B 0%, #2E353B 70%, #37414A 100%);
     }
     .check-dot {
       display: inline-flex; align-items: center; justify-content: center;
       width: 22px; height: 22px; border-radius: 9999px; flex-shrink: 0;
-      background: rgba(52,211,153,0.18); color: #6EE7B7; font-size: 12px; font-weight: 700;
+      background: rgba(241,193,92,0.18); color: #F5C865; font-size: 12px; font-weight: 700;
     }
-    .step-num {
+    .product-card { transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+    .product-card:hover { border-color: #F1C15C; box-shadow: 0 10px 26px rgba(23,34,50,0.10); }
+    .product-card:hover .product-title { color: #A67C1A; }
+    .product-card.out-of-stock { background: #FFF3F6; }
+    .product-card.out-of-stock .product-img-area { background: #FCEBEF !important; }
+    .stock-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #D8EEE5; color: #14532D;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 9999px;
+    }
+    .stock-badge::before { content: ''; width: 6px; height: 6px; border-radius: 9999px; background: #16A34A; }
+    .oos-badge {
+      display: inline-flex; align-items: center;
+      background: #F9DCE5; color: #9F1239;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 9999px;
+    }
+    .arrow-btn {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 12px; font-weight: 800; font-size: 15px;
-      background: #F1EBFE; color: #6D28D9; margin-bottom: 10px;
+      width: 32px; height: 32px; border-radius: 10px;
+      background: #EDF3FF; color: #172232; font-weight: 800;
+      transition: background 0.15s ease, color 0.15s ease;
     }
-    .logo-tile {
-      background: linear-gradient(135deg, #7C3AED, #DB2777);
-      box-shadow: 0 10px 24px rgba(124,58,237,0.35);
+    .product-card:hover .arrow-btn { background: #F1C15C; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: 10px;
+      font-size: 14px; color: #3D4A5C; font-weight: 500;
+      transition: background 0.15s ease, color 0.15s ease;
+      cursor: pointer; width: 100%; text-align: right;
     }
-    .product-card { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
-    .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(23,20,18,0.12); border-color: #E3DCF9; }
-    .product-card.out-of-stock { opacity: 0.8; }
-    .product-card.out-of-stock .product-img-area { filter: grayscale(0.75); }
-    .trust-chip {
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.22);
-      backdrop-filter: blur(6px);
-    }
-    .animate-in { animation: fadeUp 0.45s ease both; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .sidebar-link:hover { background: #F7F9FD; color: #172232; }
+    .sidebar-link.active { background: #FFF1CF; color: #172232; font-weight: 700; }
+    .sidebar-section { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #8A97A8; padding: 0 12px; margin: 18px 0 6px; }
+    .animate-in { animation: fadeUp 0.4s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
   <!-- LOGIN VIEW -->
   <div id="loginView" class="flex-1 flex items-center justify-center p-4 py-8">
-    <div class="w-full max-w-4xl grid md:grid-cols-5 rounded-[28px] overflow-hidden border border-stone-200/80 shadow-2xl bg-white">
+    <div class="w-full max-w-4xl grid md:grid-cols-5 rounded-[28px] overflow-hidden border border-[#E1E8F4]/80 shadow-2xl bg-white">
       <div class="brand-panel md:col-span-2 p-8 sm:p-10 text-white relative overflow-hidden flex flex-col">
         <div class="hero-glow glow-a"></div>
         <div class="relative z-10">
-          <div class="logo-tile inline-flex items-center justify-center w-12 h-12 rounded-2xl text-white text-2xl font-bold mb-4">α</div>
+          <div class="logo-tile inline-flex items-center justify-center w-12 h-12 rounded-2xl text-[#21272B] text-2xl font-bold mb-4">α</div>
           <div class="font-extrabold text-2xl leading-tight">ألفا ديجيتال</div>
           <p class="text-sm text-violet-100/90 mt-2 leading-relaxed">حسابات ذكاء اصطناعي أصلية — ChatGPT وCanva وCapCut — بأسعار واضحة بالدينار العراقي.</p>
           <div class="space-y-3 mt-8 text-sm">
@@ -115,17 +126,17 @@
       </div>
       <div class="md:col-span-3 p-8 sm:p-10">
         <div class="mb-6">
-          <h1 id="authTitle" class="text-2xl font-extrabold text-stone-900">تسجيل الدخول</h1>
-          <p class="text-xs text-stone-500 mt-1">سجّل دخولك أو أنشئ حساباً جديداً للشراء</p>
+          <h1 id="authTitle" class="text-2xl font-extrabold text-[#172232]">تسجيل الدخول</h1>
+          <p class="text-xs text-[#6B7A90] mt-1">سجّل دخولك أو أنشئ حساباً جديداً للشراء</p>
         </div>
 
         <form id="loginForm" class="space-y-4">
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1.5">اسم المستخدم</label>
+            <label class="block text-xs font-medium text-[#3D4A5C] mb-1.5">اسم المستخدم</label>
             <input id="loginUsername" type="text" required autocomplete="username" class="input-field" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1.5">كلمة المرور</label>
+            <label class="block text-xs font-medium text-[#3D4A5C] mb-1.5">كلمة المرور</label>
             <input id="loginPassword" type="password" required autocomplete="current-password" class="input-field" />
           </div>
           <div id="loginError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
@@ -135,21 +146,21 @@
         </form>
 
         <div class="mt-4 text-center">
-          <button id="authToggleBtn" onclick="toggleAuthMode()" class="text-xs text-stone-600 hover:text-stone-900 underline">إنشاء حساب جديد</button>
+          <button id="authToggleBtn" onclick="toggleAuthMode()" class="text-xs text-[#5B6B82] hover:text-[#172232] underline">إنشاء حساب جديد</button>
         </div>
 
         <form id="registerForm" class="space-y-4 hidden">
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1.5">اسم المستخدم</label>
+            <label class="block text-xs font-medium text-[#3D4A5C] mb-1.5">اسم المستخدم</label>
             <input id="regUsername" type="text" required autocomplete="username" class="input-field" />
-            <p class="text-[11px] text-stone-500 mt-1">أحرف إنجليزية وأرقام فقط، 3–20 حرفاً</p>
+            <p class="text-[11px] text-[#6B7A90] mt-1">أحرف إنجليزية وأرقام فقط، 3–20 حرفاً</p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1.5">كلمة المرور</label>
+            <label class="block text-xs font-medium text-[#3D4A5C] mb-1.5">كلمة المرور</label>
             <input id="regPassword" type="password" required autocomplete="new-password" class="input-field" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1.5">تأكيد كلمة المرور</label>
+            <label class="block text-xs font-medium text-[#3D4A5C] mb-1.5">تأكيد كلمة المرور</label>
             <input id="regPassword2" type="password" required autocomplete="new-password" class="input-field" />
           </div>
           <div id="regError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
@@ -162,63 +173,80 @@
   </div>
 
   <!-- APP VIEW -->
-  <div id="appView" class="hidden flex-1 flex flex-col">
-    <!-- Top Bar -->
-    <header class="bg-white/90 backdrop-blur border-b border-stone-200 sticky top-0 z-40">
-      <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <span class="logo-tile inline-flex items-center justify-center w-9 h-9 rounded-xl text-white font-bold">α</span>
+  <div id="appView" class="hidden flex-1">
+    <!-- Sidebar backdrop (mobile) -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar(false)" class="hidden fixed inset-0 bg-black/40 z-40 lg:hidden"></div>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 bottom-0 right-0 w-[232px] bg-[#FFFEFA] border-l border-[#E1E8F4] z-50 flex flex-col max-lg:translate-x-full max-lg:transition-transform max-lg:duration-200">
+      <div class="brand-panel px-5 pt-6 pb-5 relative overflow-hidden">
+        <div class="relative z-10 flex items-center gap-3">
+          <span class="logo-tile inline-flex items-center justify-center w-11 h-11 rounded-xl text-xl font-bold shrink-0">α</span>
           <span>
-            <span class="font-bold text-base tracking-tight block leading-none">ألفا ديجيتال</span>
-            <span class="text-[10px] text-stone-400 tracking-widest">ALPHA DIGITAL STORE</span>
+            <span class="font-extrabold text-white text-lg block leading-tight">ألفا ديجيتال</span>
+            <span class="text-[11px] text-white/60">متجر الحسابات الرقمية</span>
           </span>
-          <span id="roleBadge" class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 border border-stone-200 mr-1"></span>
-          <span class="hidden sm:inline-block text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100 font-bold">الأسعار بالدينار العراقي</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="loadState()" class="btn-secondary px-3 py-1.5 text-xs font-medium">تحديث</button>
-          <button onclick="logout()" class="btn-secondary px-3 py-1.5 text-xs font-medium text-red-700">خروج</button>
         </div>
       </div>
-    </header>
+      <div class="flex-1 overflow-y-auto px-3 py-4">
+        <div id="sideUserBox"></div>
+        <div class="sidebar-section">المتجر</div>
+        <div id="navTabs" class="space-y-0.5"></div>
+        <div id="folderSection">
+          <div class="sidebar-section">الفئات</div>
+          <div id="folderList" class="space-y-0.5"></div>
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-[#E1E8F4] text-[11px] text-[#8A97A8]">
+        <span class="font-bold text-[#172232]">ألفا ديجيتال</span> — متجر الحسابات الرقمية
+      </div>
+    </aside>
 
-    <!-- Navigation Tabs -->
-    <div class="bg-white border-b border-stone-200">
-      <div id="navTabs" class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap gap-2 text-sm"></div>
+    <!-- Main column -->
+    <div class="lg:mr-[232px] flex flex-col min-h-screen">
+      <!-- Top Bar -->
+      <header class="bg-[#FCFBF9] border-b border-[#E1E8F4] sticky top-0 z-30">
+        <div class="px-5 sm:px-8 h-16 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <button onclick="toggleSidebar(true)" class="lg:hidden btn-secondary px-2.5 py-1.5 text-sm font-bold">☰</button>
+            <h1 id="pageTitle" class="text-xl sm:text-2xl font-extrabold truncate">المتجر</h1>
+            <span class="hidden sm:inline-block text-[11px] px-2 py-0.5 rounded-full bg-[#FFF1CF] text-[#7A5A12] font-bold shrink-0">الأسعار بالدينار العراقي</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="loadState()" class="btn-secondary px-3 py-1.5 text-xs font-medium">تحديث</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="w-full px-5 sm:px-8 py-6 flex-1">
+        <div id="mainContent" class="animate-in"></div>
+      </main>
+
+      <footer class="border-t border-[#E1E8F4] px-5 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#6B7A90]">
+        <div><span class="font-bold text-[#172232]">ألفا ديجيتال</span> — متجر الحسابات الرقمية</div>
+        <div>الدفع عبر ماستركارد فقط • استلام فوري بعد رفع إثبات التحويل</div>
+      </footer>
     </div>
-
-    <!-- Main Content -->
-    <main class="max-w-6xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
-      <div id="mainContent" class="animate-in"></div>
-    </main>
   </div>
 
-  <footer class="bg-[#171412] text-stone-400 mt-10">
-    <div class="max-w-6xl mx-auto px-4 py-8 flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2 mb-2"><span class="logo-tile inline-flex items-center justify-center w-7 h-7 rounded-lg text-white text-sm font-bold">α</span><span class="font-bold text-white">ألفا ديجيتال</span></div>
-        <p class="text-xs leading-relaxed">متجر الحسابات الرقمية — حسابات ذكاء اصطناعي أصلية بأسعار واضحة بالدينار العراقي.</p>
-      </div>
-      <div class="text-xs leading-relaxed">
-        <div class="text-white font-bold mb-1">الدفع والتسليم</div>
-        <div>الدفع عبر ماستركارد فقط • استلام فوري بعد رفع إثبات التحويل</div>
-        <div>جميع الأسعار بالدينار العراقي (د.ع)</div>
-      </div>
-    </div>
-  </footer>
+  <!-- Floating buttons -->
+  <div class="fixed bottom-4 left-4 z-40 flex flex-col gap-2">
+    <button onclick="focusShopSearch()" class="w-11 h-11 rounded-full bg-white shadow-lg border border-[#E1E8F4] text-[#172232] text-lg font-bold" title="بحث">⌕</button>
+    <button onclick="scrollTopSmooth()" class="w-11 h-11 rounded-full bg-white shadow-lg border border-[#E1E8F4] text-[#172232] text-lg font-bold" title="العودة للأعلى">↑</button>
+  </div>
 
   <!-- DELIVERY MODAL -->
   <div id="deliveryModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-lg p-6 space-y-4">
-      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+      <div class="flex items-center justify-between border-b border-[#E1E8F4] pb-3">
         <div>
           <h3 class="font-bold text-base">تم تنفيذ الطلب بنجاح</h3>
-          <p id="deliveryMeta" class="text-xs text-stone-500 mt-0.5"></p>
+          <p id="deliveryMeta" class="text-xs text-[#6B7A90] mt-0.5"></p>
         </div>
-        <button onclick="closeModal('deliveryModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+        <button onclick="closeModal('deliveryModal')" class="text-[#8A97A8] hover:text-[#172232] text-lg">✕</button>
       </div>
       <div id="deliveryItemsList" class="space-y-2.5 max-h-72 overflow-y-auto"></div>
-      <div class="flex justify-end gap-2 pt-2 border-t border-stone-200">
+      <div class="flex justify-end gap-2 pt-2 border-t border-[#E1E8F4]">
         <button onclick="copyAllDelivered()" class="btn-secondary px-4 py-2 text-xs font-medium">نسخ الكل</button>
         <button onclick="closeModal('deliveryModal')" class="btn-primary px-4 py-2 text-xs font-medium">إغلاق</button>
       </div>
@@ -228,28 +256,28 @@
   <!-- ADD STOCK MODAL (ADMIN) -->
   <div id="stockModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-lg p-6 space-y-4">
-      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+      <div class="flex items-center justify-between border-b border-[#E1E8F4] pb-3">
         <div>
           <h3 id="stockModalTitle" class="font-bold text-base">إدارة المخزون</h3>
-          <p class="text-xs text-stone-500 mt-0.5">أضف كل حساب في سطر منفصل مع ملاحظة الدفعة</p>
+          <p class="text-xs text-[#6B7A90] mt-0.5">أضف كل حساب في سطر منفصل مع ملاحظة الدفعة</p>
         </div>
-        <button onclick="closeModal('stockModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+        <button onclick="closeModal('stockModal')" class="text-[#8A97A8] hover:text-[#172232] text-lg">✕</button>
       </div>
 
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-medium text-stone-700 mb-1">ملاحظات التسليم لهذه الدفعة (اختياري)</label>
+          <label class="block text-xs font-medium text-[#3D4A5C] mb-1">ملاحظات التسليم لهذه الدفعة (اختياري)</label>
           <input id="stockBatchNote" type="text" placeholder="مثال: حساب خاص - ضمان 28 يوم - لا تغير الباسورد" class="input-field" />
         </div>
         <div>
-          <label class="block text-xs font-medium text-stone-700 mb-1">الحسابات (سطر لكل حساب)</label>
+          <label class="block text-xs font-medium text-[#3D4A5C] mb-1">الحسابات (سطر لكل حساب)</label>
           <textarea id="stockAccountsInput" rows="5" placeholder="user1@mail.com:pass123&#10;user2@mail.com:pass456" class="input-field mono text-xs" dir="ltr"></textarea>
         </div>
         <button onclick="submitAddStock()" class="btn-primary w-full py-2 text-xs font-medium">حفظ وإضافة للمخزون</button>
       </div>
 
-      <div class="border-t border-stone-200 pt-3">
-        <div class="text-xs font-semibold text-stone-700 mb-2">المخزون الحالي المتوفر (<span id="currentStockCount">0</span>)</div>
+      <div class="border-t border-[#E1E8F4] pt-3">
+        <div class="text-xs font-semibold text-[#3D4A5C] mb-2">المخزون الحالي المتوفر (<span id="currentStockCount">0</span>)</div>
         <div id="currentStockList" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
       </div>
     </div>
@@ -258,32 +286,32 @@
   <!-- PRODUCT FORM MODAL (ADMIN) -->
   <div id="productModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-md p-6 space-y-4">
-      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+      <div class="flex items-center justify-between border-b border-[#E1E8F4] pb-3">
         <h3 id="productModalTitle" class="font-bold text-base">إضافة منتج</h3>
-        <button onclick="closeModal('productModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+        <button onclick="closeModal('productModal')" class="text-[#8A97A8] hover:text-[#172232] text-lg">✕</button>
       </div>
       <div class="space-y-3">
         <input type="hidden" id="prodIdInput" />
         <div>
-          <label class="block text-xs font-medium text-stone-700 mb-1">اسم المنتج</label>
+          <label class="block text-xs font-medium text-[#3D4A5C] mb-1">اسم المنتج</label>
           <input id="prodNameInput" type="text" placeholder="ChatGPT Plus" class="input-field" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1">المدة</label>
+            <label class="block text-xs font-medium text-[#3D4A5C] mb-1">المدة</label>
             <input id="prodDurationInput" type="text" placeholder="شهر واحد" class="input-field" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-700 mb-1">السعر (د.ع)</label>
+            <label class="block text-xs font-medium text-[#3D4A5C] mb-1">السعر (د.ع)</label>
             <input id="prodPriceInput" type="number" step="100" min="0" placeholder="25000" class="input-field mono" dir="ltr" />
           </div>
         </div>
         <div>
-          <label class="block text-xs font-medium text-stone-700 mb-1">ملاحظة افتراضية للطلبات</label>
+          <label class="block text-xs font-medium text-[#3D4A5C] mb-1">ملاحظة افتراضية للطلبات</label>
           <input id="prodNoteInput" type="text" placeholder="تظهر عند تسليم الحسابات" class="input-field" />
         </div>
         <div>
-          <label class="block text-xs font-medium text-stone-700 mb-1">رابط صورة المنتج (اختياري)</label>
+          <label class="block text-xs font-medium text-[#3D4A5C] mb-1">رابط صورة المنتج (اختياري)</label>
           <input id="prodImageInput" type="text" placeholder="https://..." class="input-field mono text-xs" dir="ltr" />
         </div>
       </div>
@@ -297,22 +325,22 @@
   <!-- BUY MODAL -->
   <div id="buyModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="card w-full max-w-lg p-6 space-y-4 shadow-xl">
-      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+      <div class="flex items-center justify-between border-b border-[#E1E8F4] pb-3">
         <div class="flex items-center gap-3">
-          <img id="buyProductImg" class="hidden h-12 w-12 object-contain rounded-xl bg-stone-50 border border-stone-200 p-1" />
+          <img id="buyProductImg" class="hidden h-12 w-12 object-contain rounded-xl bg-[#F7F9FD] border border-[#E1E8F4] p-1" />
           <div>
             <h3 class="font-bold text-base">إتمام الشراء</h3>
-            <p id="buyMeta" class="text-xs text-stone-500 mt-0.5"></p>
+            <p id="buyMeta" class="text-xs text-[#6B7A90] mt-0.5"></p>
           </div>
         </div>
-        <button onclick="closeModal('buyModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+        <button onclick="closeModal('buyModal')" class="text-[#8A97A8] hover:text-[#172232] text-lg">✕</button>
       </div>
-      <div id="buyPaymentBox" class="bg-stone-50 border border-stone-200 rounded-lg p-4 space-y-2 text-sm"></div>
+      <div id="buyPaymentBox" class="bg-[#F7F9FD] border border-[#E1E8F4] rounded-lg p-4 space-y-2 text-sm"></div>
       <div>
-        <label class="block text-xs font-medium text-stone-700 mb-1.5">صورة إثبات التحويل (سكرين شوت)</label>
+        <label class="block text-xs font-medium text-[#3D4A5C] mb-1.5">صورة إثبات التحويل (سكرين شوت)</label>
         <input id="receiptInput" type="file" accept="image/*" class="input-field text-xs" />
-        <img id="receiptPreview" class="hidden mt-3 max-h-48 rounded-lg border border-stone-200 mx-auto" />
-        <p class="text-[11px] text-stone-500 mt-1.5">ارفع سكرين شوت واضحاً يظهر المبلغ المحوّل — وسيتم تسليم الحساب لك مباشرة بعد إرسال الطلب.</p>
+        <img id="receiptPreview" class="hidden mt-3 max-h-48 rounded-lg border border-[#E1E8F4] mx-auto" />
+        <p class="text-[11px] text-[#6B7A90] mt-1.5">ارفع سكرين شوت واضحاً يظهر المبلغ المحوّل — وسيتم تسليم الحساب لك مباشرة بعد إرسال الطلب.</p>
       </div>
       <div id="buyError" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2.5"></div>
       <button id="buySubmitBtn" onclick="submitBuyOrder()" class="btn-primary w-full py-2.5 text-sm font-medium">إرسال الطلب</button>
@@ -324,9 +352,9 @@
     <div class="card w-full max-w-2xl p-4 space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="font-bold text-sm">إثبات التحويل</h3>
-        <button onclick="closeModal('receiptModal')" class="text-stone-400 hover:text-stone-800 text-lg">✕</button>
+        <button onclick="closeModal('receiptModal')" class="text-[#8A97A8] hover:text-[#172232] text-lg">✕</button>
       </div>
-      <img id="receiptModalImg" class="w-full max-h-[70vh] object-contain rounded-lg border border-stone-200" />
+      <img id="receiptModalImg" class="w-full max-h-[70vh] object-contain rounded-lg border border-[#E1E8F4]" />
     </div>
   </div>
 
@@ -335,6 +363,10 @@
     let currentUser = null;
     let state = { products: [], orders: [], paymentSettings: { cardType: 'MasterCard', cardNumber: '', cardHolder: '' }, customers: [] };
     let activeTab = 'products';
+    let shopSearch = '';
+    let shopInStockOnly = false;
+    let shopFolder = null;
+    let gridCols = 3;
     let quantities = {};
     let activeStockProductId = null;
     let lastDeliveredItems = [];
@@ -448,7 +480,6 @@
 
         document.getElementById('loginView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
-        document.getElementById('roleBadge').textContent = currentUser.role === 'admin' ? 'الإدارة' : 'مشتري';
         await loadState();
       } catch (e) {
         logout();
@@ -469,6 +500,30 @@
       activeTab = tab;
       renderTabs();
       renderContent();
+      toggleSidebar(false);
+    }
+
+    function toggleSidebar(open) {
+      const sb = document.getElementById('sidebar');
+      const bd = document.getElementById('sidebarBackdrop');
+      if (!sb || !bd) return;
+      const show = open === true ? true : open === false ? false : sb.classList.contains('max-lg:translate-x-full');
+      sb.classList.toggle('max-lg:translate-x-full', !show);
+      bd.classList.toggle('hidden', !show);
+    }
+
+    function goMyAccount() {
+      setTab(currentUser.role === 'admin' ? 'settings' : 'orders');
+    }
+
+    function scrollTopSmooth() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function focusShopSearch() {
+      if (currentUser && currentUser.role !== 'admin' && activeTab !== 'products') setTab('products');
+      scrollTopSmooth();
+      setTimeout(() => { const el = document.getElementById('shopSearchInput'); if (el) el.focus(); }, 350);
     }
 
     function renderTabs() {
@@ -479,17 +534,95 @@
             { id: 'settings', label: 'الإعدادات والدفع' }
           ]
         : [
-            { id: 'products', label: 'المنتجات والشراء' },
+            { id: 'products', label: 'المتجر' },
             { id: 'orders', label: 'طلباتي' }
           ];
 
       document.getElementById('navTabs').innerHTML = tabs.map(t => `
-        <button onclick="setTab('${t.id}')" class="px-4 py-2 rounded-full text-xs font-bold transition-colors ${
-          activeTab === t.id
-            ? 'bg-stone-900 text-white shadow'
-            : 'bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-800'
-        }">${t.label}</button>
+        <button onclick="setTab('${t.id}')" class="sidebar-link ${activeTab === t.id ? 'active' : ''}">${t.label}</button>
       `).join('');
+
+      const activeLabel = (tabs.find(t => t.id === activeTab) || tabs[0]).label;
+      document.getElementById('pageTitle').textContent = activeLabel;
+
+      const ub = document.getElementById('sideUserBox');
+      if (ub) {
+        ub.innerHTML = `
+          <div class="flex items-center gap-2.5 px-2 py-1">
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#FFF1CF] text-[#7A5A12] font-extrabold text-sm shrink-0">${escapeHtml((currentUser.username || '?').trim().charAt(0).toUpperCase())}</span>
+            <span class="min-w-0">
+              <span class="block text-sm font-bold truncate" dir="ltr">${escapeHtml(currentUser.username)}</span>
+              <span class="block text-[11px] text-[#6B7A90]">${currentUser.role === 'admin' ? 'الإدارة' : 'مشتري'}</span>
+            </span>
+          </div>
+          <button onclick="goMyAccount()" class="btn-primary w-full py-2 text-xs font-bold mt-2">حسابي</button>
+          <button onclick="logout()" class="w-full text-center text-[11px] text-red-700 hover:underline mt-2">تسجيل الخروج</button>`;
+      }
+
+      const fs = document.getElementById('folderSection');
+      const fl = document.getElementById('folderList');
+      if (currentUser.role === 'admin') {
+        fs.classList.add('hidden');
+      } else {
+        fs.classList.remove('hidden');
+        fl.innerHTML = `
+          <button onclick="setShopFolder(null)" class="sidebar-link ${!shopFolder ? 'active' : ''}">كل المنتجات</button>
+          ${state.products.map(p => `
+            <button onclick="setShopFolder('${p.id}')" class="sidebar-link ${shopFolder === p.id ? 'active' : ''}">${escapeHtml(p.name)}</button>
+          `).join('')}`;
+      }
+    }
+
+    function setShopFolder(id) {
+      shopFolder = id;
+      renderTabs();
+      updateShopGrid();
+      toggleSidebar(false);
+    }
+
+    function onShopSearch(v) {
+      shopSearch = v;
+      updateShopGrid();
+    }
+
+    function onShopStockOnly(checked) {
+      shopInStockOnly = checked;
+      updateShopGrid();
+    }
+
+    function setGridCols(n) {
+      gridCols = n;
+      const b3 = document.getElementById('cols3Btn');
+      const b5 = document.getElementById('cols5Btn');
+      const on = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-[#FFF1CF] text-[#172232]';
+      const off = 'px-3 py-1.5 rounded-lg text-xs font-bold text-[#6B7A90] hover:bg-[#F7F9FD]';
+      if (b3) b3.className = gridCols === 3 ? on : off;
+      if (b5) b5.className = gridCols === 5 ? on : off;
+      updateShopGrid();
+    }
+
+    function filteredProducts() {
+      return state.products.filter(p => {
+        if (shopFolder && p.id !== shopFolder) return false;
+        if (shopInStockOnly && p.stockCount === 0) return false;
+        if (shopSearch && !(p.name || '').toLowerCase().includes(shopSearch.trim().toLowerCase())) return false;
+        return true;
+      });
+    }
+
+    function updateShopGrid() {
+      const wrap = document.getElementById('shopGridWrap');
+      if (wrap) wrap.innerHTML = renderShopGrid();
+    }
+
+    function cardClick(event, productId, outOfStock) {
+      if (outOfStock) return;
+      openBuyModal(productId);
+    }
+
+    function stepQty(event, productId, delta, max) {
+      event.stopPropagation();
+      changeQty(productId, delta, max);
     }
 
     function renderContent() {
@@ -518,7 +651,7 @@
 
     function openBuyModal(productId) {
       const product = state.products.find(p => p.id === productId);
-      if (!product) return;
+      if (!product || product.stockCount === 0) return;
       buyProductId = productId;
       receiptDataUrl = '';
       const qty = quantities[productId] || 1;
@@ -530,14 +663,14 @@
       const box = document.getElementById('buyPaymentBox');
       if (pay.cardNumber) {
         box.innerHTML = `
-          <div class="font-semibold text-stone-900">حوّل المبلغ إلى بطاقة ماستركارد</div>
+          <div class="font-semibold text-[#172232]">حوّل المبلغ إلى بطاقة ماستركارد</div>
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs text-stone-500">رقم البطاقة:</span>
+            <span class="text-xs text-[#6B7A90]">رقم البطاقة:</span>
             <code class="mono text-sm font-semibold select-all" dir="ltr">${escapeHtml(pay.cardNumber)}</code>
             <button onclick="copyText('${escapeJs(pay.cardNumber)}')" class="btn-secondary px-2.5 py-1 text-xs shrink-0">نسخ</button>
           </div>
-          ${pay.cardHolder ? `<div class="text-xs text-stone-600">اسم صاحب البطاقة: ${escapeHtml(pay.cardHolder)}</div>` : ''}
-          <div class="text-xs text-stone-600">المبلغ المطلوب: <span class="mono font-bold text-stone-900">${formatIQD(total)}</span></div>`;
+          ${pay.cardHolder ? `<div class="text-xs text-[#5B6B82]">اسم صاحب البطاقة: ${escapeHtml(pay.cardHolder)}</div>` : ''}
+          <div class="text-xs text-[#5B6B82]">المبلغ المطلوب: <span class="mono font-bold text-[#172232]">${formatIQD(total)}</span></div>`;
       } else {
         box.innerHTML = `<div class="text-xs text-amber-800">لم يتم تحديد بيانات الدفع بعد — تواصل مع الإدارة قبل التحويل.</div>`;
       }
@@ -601,101 +734,75 @@
       });
     }
 
-    const STORE_GRADIENTS = [
-      'linear-gradient(135deg,#E7F6EE 0%,#D8F0E2 100%)',
-      'linear-gradient(135deg,#EFEBFE 0%,#E4DCFD 100%)',
-      'linear-gradient(135deg,#FDEFE3 0%,#FBE4CC 100%)',
-      'linear-gradient(135deg,#E9F2FE 0%,#D8E7FD 100%)'
-    ];
+    const CARD_TOP_BG = 'linear-gradient(135deg,#E1E8F4 0%,#E9EFF1 100%)';
 
     function productImageHtml(p) {
       if (!p.image) {
-        return `<div class="h-24 w-24 rounded-3xl text-white flex items-center justify-center font-bold shadow-lg" style="font-size:2.4rem;background:linear-gradient(135deg,#7C3AED,#DB2777)">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
+        return `<div class="w-14 h-14 rounded-xl bg-white shadow-sm text-[#172232] flex items-center justify-center font-extrabold" style="font-size:1.5rem">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
       }
-      return `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" class="h-24 w-24 object-contain drop-shadow-lg" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-        <div class="h-24 w-24 rounded-3xl text-white items-center justify-center font-bold shadow-lg" style="display:none;font-size:2.4rem;background:linear-gradient(135deg,#7C3AED,#DB2777)">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
+      return `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" class="w-14 h-14 object-contain rounded-xl bg-white shadow-sm p-1.5" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="w-14 h-14 rounded-xl bg-white shadow-sm text-[#172232] items-center justify-center font-extrabold" style="display:none;font-size:1.5rem">${escapeHtml((p.name || '?').trim().charAt(0))}</div>`;
     }
 
     function renderUserProducts() {
-      const availableCount = state.products.filter(p => p.stockCount > 0).length;
-      const hero = `
-        <div class="hero-gradient rounded-[28px] p-6 sm:p-10 text-white overflow-hidden relative">
-          <div class="hero-glow glow-a"></div>
-          <div class="hero-glow glow-b"></div>
-          <div class="relative z-10">
-            <div class="text-[11px] font-bold tracking-[0.2em] text-violet-200 mb-3">ALPHA DIGITAL • متجر الحسابات الرقمية</div>
-            <h2 class="text-3xl sm:text-[2.7rem] font-extrabold leading-[1.25]">حسابات ذكاء اصطناعي أصلية،<br class="hidden sm:block" /> تستلمها فوراً بعد الدفع</h2>
-            <p class="text-sm sm:text-base text-violet-100/90 mt-3 max-w-xl leading-relaxed">اختر حسابك، حوّل المبلغ إلى بطاقة الماستركارد، ارفع سكرين شوت للتحويل — ويظهر لك الحساب مباشرة، بدون انتظار.</p>
-            <div class="flex flex-wrap items-center gap-2.5 mt-6">
-              <a href="#productsGrid" class="bg-white text-violet-900 px-5 py-2.5 rounded-full text-sm font-extrabold shadow-lg hover:bg-violet-50 transition-colors">تصفح المنتجات ↓</a>
-              <span class="trust-chip text-xs px-3 py-2 rounded-full">✓ دفع آمن عبر ماستركارد</span>
-              <span class="trust-chip text-xs px-3 py-2 rounded-full">✓ تسليم فوري بعد رفع السكرين</span>
-              <span class="trust-chip text-xs px-3 py-2 rounded-full">✓ ${availableCount} منتجات متوفرة الآن</span>
-            </div>
+      return `
+        <div class="card px-4 py-3 flex flex-wrap items-center gap-3">
+          <span class="text-sm font-bold">${state.products.length} منتجات</span>
+          <div class="relative flex-1 min-w-[180px] max-w-md">
+            <input id="shopSearchInput" type="text" value="${escapeHtml(shopSearch)}" oninput="onShopSearch(this.value)" placeholder="ابحث عن منتج…" class="input-field py-2 pr-9" style="background:#F7F9FD" />
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A97A8] pointer-events-none">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" /></svg>
+            </span>
           </div>
-        </div>`;
-      if (!state.products.length) {
-        return hero + `<div class="card p-10 text-center mt-5">
-          <div class="text-sm text-stone-500">لا توجد منتجات مضافة حالياً — تابعنا قريباً.</div>
+          <label class="flex items-center gap-1.5 text-xs font-medium text-[#3D4A5C] cursor-pointer select-none">
+            <input type="checkbox" ${shopInStockOnly ? 'checked' : ''} onchange="onShopStockOnly(this.checked)" class="w-4 h-4" style="accent-color:#F1C15C" /> متوفر فقط
+          </label>
+          <div class="flex items-center gap-1 mr-auto">
+            <button id="cols3Btn" onclick="setGridCols(3)" class="px-3 py-1.5 rounded-lg text-xs font-bold ${gridCols === 3 ? 'bg-[#FFF1CF] text-[#172232]' : 'text-[#6B7A90] hover:bg-[#F7F9FD]'}">3 أعمدة</button>
+            <button id="cols5Btn" onclick="setGridCols(5)" class="px-3 py-1.5 rounded-lg text-xs font-bold ${gridCols === 5 ? 'bg-[#FFF1CF] text-[#172232]' : 'text-[#6B7A90] hover:bg-[#F7F9FD]'}">5 أعمدة</button>
+          </div>
+        </div>
+        <div id="shopGridWrap" class="mt-4">${renderShopGrid()}</div>
+      `;
+    }
+
+    function renderShopGrid() {
+      const list = filteredProducts();
+      if (!list.length) {
+        return `<div class="card p-10 text-center">
+          <div class="text-sm text-[#6B7A90]">لا توجد منتجات مطابقة — جرّب بحثاً آخر أو ألغِ الفلاتر.</div>
         </div>`;
       }
-      return hero + `
-        <div class="flex items-end justify-between mt-9 mb-4">
-          <div>
-            <h2 class="text-xl font-extrabold text-stone-900">المنتجات</h2>
-            <p class="text-xs text-stone-500 mt-1">جميع الأسعار بالدينار العراقي (د.ع) — الدفع عبر ماستركارد فقط</p>
-          </div>
-          <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">${availableCount} متوفرة الآن</span>
-        </div>
-        <div id="productsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          ${state.products.map((p, idx) => {
+      const cols = gridCols === 5 ? 'sm:grid-cols-2 lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-3';
+      return `
+        <div class="grid ${cols} gap-4">
+          ${list.map((p) => {
             const qty = quantities[p.id] || 1;
             const outOfStock = p.stockCount === 0;
             return `
-              <div class="card product-card ${outOfStock ? 'out-of-stock' : ''} overflow-hidden flex flex-col">
-                <div class="product-img-area h-48 flex items-center justify-center relative" style="background:${STORE_GRADIENTS[idx % STORE_GRADIENTS.length]}">
+              <div class="card product-card ${outOfStock ? 'out-of-stock' : ''} overflow-hidden flex flex-col cursor-pointer" onclick="cardClick(event,'${p.id}',${outOfStock})">
+                <div class="product-img-area h-[90px] flex items-center justify-center relative" style="background:${CARD_TOP_BG}">
                   ${productImageHtml(p)}
-                  ${outOfStock ? `<span class="absolute top-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-red-600 text-white font-bold shadow">نفد المخزون</span>` : `<span class="absolute top-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-white/95 text-emerald-700 font-bold shadow">متوفر: ${p.stockCount}</span>`}
-                  <span class="absolute bottom-3 right-3 text-[11px] px-2.5 py-1 rounded-full bg-black/60 text-white font-medium">${escapeHtml(p.duration)}</span>
+                  ${outOfStock ? `<span class="oos-badge absolute top-3 right-3">غير متوفر</span>` : `<span class="stock-badge absolute top-3 right-3">${p.stockCount} متوفر</span>`}
                 </div>
-                <div class="p-5 flex flex-col flex-1">
-                  <h3 class="font-extrabold text-lg text-stone-900 leading-snug">${escapeHtml(p.name)}</h3>
-                  ${p.defaultNote ? `<p class="text-xs text-stone-500 mt-1.5 leading-relaxed">${escapeHtml(p.defaultNote)}</p>` : ''}
-                  <div class="flex items-end justify-between mt-5 mb-4">
-                    <div>
-                      <div class="text-[11px] text-stone-400 font-medium">السعر</div>
-                      <span class="text-[1.65rem] leading-none font-extrabold text-stone-900 mono">${formatIQD(p.price)}</span>
-                    </div>
-                    <div class="inline-flex items-center border border-stone-300 rounded-full overflow-hidden bg-white">
-                      <button onclick="changeQty('${p.id}', -1, ${p.stockCount})" class="px-3 py-2 text-sm font-bold hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>−</button>
-                      <span class="px-3 py-2 text-sm font-bold mono border-x border-stone-300">${outOfStock ? 0 : qty}</span>
-                      <button onclick="changeQty('${p.id}', 1, ${p.stockCount})" class="px-3 py-2 text-sm font-bold hover:bg-stone-100" ${outOfStock ? 'disabled' : ''}>+</button>
-                    </div>
+                <div class="p-4 flex flex-col flex-1">
+                  <h3 class="product-title font-bold text-[15px] text-[#172232] truncate">${escapeHtml(p.name)}</h3>
+                  <p class="text-xs text-[#6B7A90] mt-0.5 truncate">${escapeHtml(p.duration)}</p>
+                  <div class="border-t border-[#E1E8F4] mt-3 pt-3 flex items-center justify-between gap-2">
+                    <span class="text-[19px] leading-none font-extrabold text-[#172232] mono">${formatIQD(p.price)}</span>
+                    <span class="flex items-center gap-1.5">
+                      <span class="inline-flex items-center border border-[#D8DEE9] rounded-lg overflow-hidden bg-white">
+                        <button onclick="stepQty(event,'${p.id}',-1,${p.stockCount})" class="px-2.5 py-1 text-sm font-bold hover:bg-[#EFF1F4]" ${outOfStock ? 'disabled' : ''}>−</button>
+                        <span class="px-2 py-1 text-xs font-bold mono border-x border-[#D8DEE9]">${outOfStock ? 0 : qty}</span>
+                        <button onclick="stepQty(event,'${p.id}',1,${p.stockCount})" class="px-2.5 py-1 text-sm font-bold hover:bg-[#EFF1F4]" ${outOfStock ? 'disabled' : ''}>+</button>
+                      </span>
+                      <button onclick="cardClick(event,'${p.id}',${outOfStock})" ${outOfStock ? 'disabled' : ''} class="arrow-btn" title="شراء">←</button>
+                    </span>
                   </div>
-                  <button onclick="openBuyModal('${p.id}')" ${outOfStock ? 'disabled' : ''} class="btn-primary w-full py-3 text-sm font-bold mt-auto">
-                    ${outOfStock ? 'نفد المخزون' : 'اشترِ الآن ←'}
-                  </button>
                 </div>
               </div>
             `;
           }).join('')}
-        </div>
-        <div class="grid sm:grid-cols-3 gap-4 mt-8">
-          <div class="card p-5">
-            <div class="step-num">1</div>
-            <h3 class="font-bold text-sm text-stone-900">اختر حسابك</h3>
-            <p class="text-xs text-stone-500 mt-1 leading-relaxed">تصفح المنتجات وحدد الكمية المطلوبة.</p>
-          </div>
-          <div class="card p-5">
-            <div class="step-num">2</div>
-            <h3 class="font-bold text-sm text-stone-900">حوّل وارفع السكرين</h3>
-            <p class="text-xs text-stone-500 mt-1 leading-relaxed">حوّل المبلغ إلى بطاقة الماستركارد وارفع صورة إثبات التحويل.</p>
-          </div>
-          <div class="card p-5">
-            <div class="step-num">3</div>
-            <h3 class="font-bold text-sm text-stone-900">استلم حسابك فوراً</h3>
-            <p class="text-xs text-stone-500 mt-1 leading-relaxed">تظهر بيانات الحساب لك مباشرة بعد إرسال الطلب.</p>
-          </div>
         </div>
       `;
     }
@@ -704,17 +811,17 @@
     function renderAdminInventory() {
       return `
         <div class="card overflow-hidden">
-          <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+          <div class="px-5 py-4 border-b border-[#E1E8F4] flex items-center justify-between">
             <div>
               <h2 class="font-bold text-sm">إدارة المنتجات والمخزون</h2>
-              <p class="text-xs text-stone-500 mt-0.5">أضف الحسابات والملاحظات لكل منتج</p>
+              <p class="text-xs text-[#6B7A90] mt-0.5">أضف الحسابات والملاحظات لكل منتج</p>
             </div>
             <button onclick="openProductModal()" class="btn-primary px-3.5 py-2 text-xs font-medium">+ منتج جديد</button>
           </div>
 
           <div class="overflow-x-auto">
             <table class="w-full text-sm text-right">
-              <thead class="bg-stone-50 text-stone-600 text-xs border-b border-stone-200">
+              <thead class="bg-[#F7F9FD] text-[#5B6B82] text-xs border-b border-[#E1E8F4]">
                 <tr>
                   <th class="py-3 px-5 font-medium">المنتج</th>
                   <th class="py-3 px-4 font-medium">المعرّف</th>
@@ -724,23 +831,23 @@
                   <th class="py-3 px-5 font-medium text-left">إدارة</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-stone-200">
+              <tbody class="divide-y divide-[#E1E8F4]">
                 ${state.products.map(p => `
                   <tr>
                     <td class="py-3.5 px-5">
                       <div class="flex items-center gap-3">
-                        ${p.image ? `<img src="${escapeHtml(p.image)}" class="h-11 w-11 object-contain rounded-xl bg-stone-50 border border-stone-200 p-1.5 shrink-0" onerror="this.style.display='none'" />` : `<span class="h-11 w-11 rounded-xl bg-stone-900 text-white flex items-center justify-center font-bold shrink-0">${escapeHtml((p.name || '?').trim().charAt(0))}</span>`}
+                        ${p.image ? `<img src="${escapeHtml(p.image)}" class="h-11 w-11 object-contain rounded-xl bg-[#F7F9FD] border border-[#E1E8F4] p-1.5 shrink-0" onerror="this.style.display='none'" />` : `<span class="h-11 w-11 rounded-xl bg-[#172232] text-white flex items-center justify-center font-bold shrink-0">${escapeHtml((p.name || '?').trim().charAt(0))}</span>`}
                         <div>
-                          <div class="font-semibold text-stone-900">${escapeHtml(p.name)}</div>
-                          ${p.defaultNote ? `<div class="text-xs text-stone-500 mt-0.5">${escapeHtml(p.defaultNote)}</div>` : ''}
+                          <div class="font-semibold text-[#172232]">${escapeHtml(p.name)}</div>
+                          ${p.defaultNote ? `<div class="text-xs text-[#6B7A90] mt-0.5">${escapeHtml(p.defaultNote)}</div>` : ''}
                         </div>
                       </div>
                     </td>
-                    <td class="py-3.5 px-4 mono text-xs text-stone-500" dir="ltr">${p.id}</td>
-                    <td class="py-3.5 px-4 text-xs text-stone-600">${escapeHtml(p.duration)}</td>
+                    <td class="py-3.5 px-4 mono text-xs text-[#6B7A90]" dir="ltr">${p.id}</td>
+                    <td class="py-3.5 px-4 text-xs text-[#5B6B82]">${escapeHtml(p.duration)}</td>
                     <td class="py-3.5 px-4 mono font-medium">${formatIQD(p.price)}</td>
                     <td class="py-3.5 px-4">
-                      <span class="mono text-xs px-2 py-0.5 rounded ${p.stockCount === 0 ? 'bg-red-50 text-red-700' : 'bg-stone-100 text-stone-800'}">
+                      <span class="mono text-xs px-2 py-0.5 rounded ${p.stockCount === 0 ? 'bg-red-50 text-red-700' : 'bg-[#EFF1F4] text-[#172232]'}">
                         ${p.stockCount} حساب
                       </span>
                     </td>
@@ -764,47 +871,47 @@
       return `
         <div class="grid md:grid-cols-2 gap-5">
           <div class="card p-5 space-y-4">
-            <div class="border-b border-stone-200 pb-3">
+            <div class="border-b border-[#E1E8F4] pb-3">
               <h3 class="font-bold text-sm">بيانات الدفع (ماستركارد)</h3>
-              <p class="text-xs text-stone-500 mt-0.5">تظهر للمشترين في نافذة الشراء — ضع رقم البطاقة هنا</p>
+              <p class="text-xs text-[#6B7A90] mt-0.5">تظهر للمشترين في نافذة الشراء — ضع رقم البطاقة هنا</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-stone-700 mb-1">رقم بطاقة الماستركارد</label>
+              <label class="block text-xs font-medium text-[#3D4A5C] mb-1">رقم بطاقة الماستركارد</label>
               <input id="payCardNumber" type="text" value="${escapeHtml(pay.cardNumber || '')}" placeholder="مثال: 5213 0000 0000 0000" class="input-field mono" dir="ltr" />
             </div>
             <div>
-              <label class="block text-xs font-medium text-stone-700 mb-1">اسم صاحب البطاقة</label>
+              <label class="block text-xs font-medium text-[#3D4A5C] mb-1">اسم صاحب البطاقة</label>
               <input id="payCardHolder" type="text" value="${escapeHtml(pay.cardHolder || '')}" placeholder="الاسم كما يظهر على البطاقة" class="input-field" />
             </div>
             <button onclick="savePaymentSettings()" class="btn-primary w-full py-2 text-xs font-medium">حفظ بيانات الدفع</button>
           </div>
 
           <div class="card p-5 space-y-4">
-            <div class="border-b border-stone-200 pb-3">
+            <div class="border-b border-[#E1E8F4] pb-3">
               <h3 class="font-bold text-sm">تغيير كلمة مرور الإدارة</h3>
-              <p class="text-xs text-stone-500 mt-0.5">اترك الحقل فارغاً إذا لم ترغب بتغييرها</p>
+              <p class="text-xs text-[#6B7A90] mt-0.5">اترك الحقل فارغاً إذا لم ترغب بتغييرها</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-stone-700 mb-1">كلمة مرور الإدارة الجديدة (admin)</label>
+              <label class="block text-xs font-medium text-[#3D4A5C] mb-1">كلمة مرور الإدارة الجديدة (admin)</label>
               <input id="newAdminPass" type="password" class="input-field" />
             </div>
             <button onclick="savePasswords()" class="btn-primary w-full py-2 text-xs font-medium">حفظ كلمة المرور</button>
           </div>
 
           <div class="card p-5 space-y-3 md:col-span-2">
-            <div class="border-b border-stone-200 pb-3">
+            <div class="border-b border-[#E1E8F4] pb-3">
               <h3 class="font-bold text-sm">المستخدمون المسجلون (${customers.length})</h3>
-              <p class="text-xs text-stone-500 mt-0.5">حسابات المشترين التي سُجّلت من صفحة التسجيل</p>
+              <p class="text-xs text-[#6B7A90] mt-0.5">حسابات المشترين التي سُجّلت من صفحة التسجيل</p>
             </div>
             ${customers.length ? `
               <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 ${customers.map(c => `
-                  <div class="bg-stone-50 border border-stone-200 rounded px-3 py-2 text-xs flex items-center justify-between gap-2">
+                  <div class="bg-[#F7F9FD] border border-[#E1E8F4] rounded px-3 py-2 text-xs flex items-center justify-between gap-2">
                     <span class="mono font-medium" dir="ltr">${escapeHtml(c.username)}</span>
-                    <span class="text-stone-500">${new Date(c.createdAt).toLocaleDateString('ar-IQ')}</span>
+                    <span class="text-[#6B7A90]">${new Date(c.createdAt).toLocaleDateString('ar-IQ')}</span>
                   </div>
                 `).join('')}
-              </div>` : `<div class="text-xs text-stone-400">لا يوجد مستخدمون مسجلون بعد.</div>`}
+              </div>` : `<div class="text-xs text-[#8A97A8]">لا يوجد مستخدمون مسجلون بعد.</div>`}
           </div>
         </div>
       `;
@@ -831,11 +938,11 @@
       const pendingOrders = state.orders.filter(o => (o.status || 'pending_payment') === 'pending_payment');
       return `
         <div class="card overflow-hidden">
-          <div class="px-5 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="px-5 py-4 border-b border-[#E1E8F4] flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 class="font-bold text-sm">${isAdmin ? 'سجل الطلبات' : 'طلباتي'} (${state.orders.length})</h2>
-              <p class="text-xs text-stone-500 mt-0.5">إجمالي قيمة الطلبات: <span class="mono font-semibold text-stone-900">${formatIQD(totalAmount)}</span></p>
-              ${isAdmin ? `<p class="text-xs mt-1">الدين المستحق (طلبات قديمة غير مسددة): <span class="mono font-bold ${debtAmount > 0 ? 'text-red-700' : 'text-green-700'}">${formatIQD(debtAmount)}</span> <span class="text-stone-500">(${unsettledOrders.length} طلب غير مسدد)</span></p>` : ''}
+              <p class="text-xs text-[#6B7A90] mt-0.5">إجمالي قيمة الطلبات: <span class="mono font-semibold text-[#172232]">${formatIQD(totalAmount)}</span></p>
+              ${isAdmin ? `<p class="text-xs mt-1">الدين المستحق (طلبات قديمة غير مسددة): <span class="mono font-bold ${debtAmount > 0 ? 'text-red-700' : 'text-green-700'}">${formatIQD(debtAmount)}</span> <span class="text-[#6B7A90]">(${unsettledOrders.length} طلب غير مسدد)</span></p>` : ''}
               ${pendingOrders.length ? `<p class="text-xs mt-1 text-amber-700 font-medium">${pendingOrders.length} طلب بانتظار تأكيد الدفع</p>` : ''}
             </div>
             <div class="flex items-center gap-2">
@@ -845,10 +952,10 @@
           </div>
 
           ${!state.orders.length
-            ? `<div class="p-8 text-center text-sm text-stone-500">${isAdmin ? 'لا توجد طلبات مسجلة حتى الآن.' : 'لا توجد طلبات بعد — اختر منتجاً من تبويب المنتجات.'}</div>`
+            ? `<div class="p-8 text-center text-sm text-[#6B7A90]">${isAdmin ? 'لا توجد طلبات مسجلة حتى الآن.' : 'لا توجد طلبات بعد — اختر منتجاً من تبويب المنتجات.'}</div>`
             : `<div class="overflow-x-auto">
                 <table class="w-full text-sm text-right">
-                  <thead class="bg-stone-50 text-stone-600 text-xs border-b border-stone-200">
+                  <thead class="bg-[#F7F9FD] text-[#5B6B82] text-xs border-b border-[#E1E8F4]">
                     <tr>
                       <th class="py-3 px-4 font-medium">رقم الطلب</th>
                       ${isAdmin ? `<th class="py-3 px-4 font-medium">المشتري</th>` : ''}
@@ -861,7 +968,7 @@
                       <th class="py-3 px-4 font-medium">التاريخ</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-stone-200">
+                  <tbody class="divide-y divide-[#E1E8F4]">
                     ${state.orders.map(o => {
                       const shown = !!revealedOrders[o.id];
                       const dateStr = new Date(o.createdAt).toLocaleString('ar-IQ', { dateStyle: 'short', timeStyle: 'short' });
@@ -873,12 +980,12 @@
                         <tr class="align-top">
                           <td class="py-3.5 px-4 mono text-xs font-medium">${o.id}</td>
                           ${isAdmin ? `<td class="py-3.5 px-4 mono text-xs" dir="ltr">${escapeHtml(o.buyer || '—')}</td>` : ''}
-                          <td class="py-3.5 px-4 font-medium text-stone-900">${escapeHtml(o.productName)}</td>
+                          <td class="py-3.5 px-4 font-medium text-[#172232]">${escapeHtml(o.productName)}</td>
                           <td class="py-3.5 px-3 mono text-xs">${o.quantity}</td>
                           <td class="py-3.5 px-3 mono text-xs font-medium">${formatIQD(o.totalPrice)}</td>
                           <td class="py-3.5 px-3">${orderStatusBadge(o)}</td>
                           <td class="py-3.5 px-4">
-                            ${o.receiptImage ? `<img src="${o.receiptImage}" onclick="openReceiptModal('${o.id}')" class="h-16 w-auto rounded border border-stone-200 cursor-pointer" />` : `<span class="text-xs text-stone-400">—</span>`}
+                            ${o.receiptImage ? `<img src="${o.receiptImage}" onclick="openReceiptModal('${o.id}')" class="h-16 w-auto rounded border border-[#E1E8F4] cursor-pointer" />` : `<span class="text-xs text-[#8A97A8]">—</span>`}
                           </td>
                           <td class="py-3.5 px-4">
                             ${canReveal ? `
@@ -891,15 +998,15 @@
                             ${shown ? `
                               <div class="space-y-1.5 mt-2">
                                 ${o.items.map(it => `
-                                  <div class="bg-stone-50 border border-stone-200 rounded p-2 text-xs">
-                                    <div class="mono text-stone-900 select-all" dir="ltr">${escapeHtml(it.account)}</div>
-                                    ${it.note ? `<div class="text-stone-600 mt-1">ملاحظة: ${escapeHtml(it.note)}</div>` : ''}
+                                  <div class="bg-[#F7F9FD] border border-[#E1E8F4] rounded p-2 text-xs">
+                                    <div class="mono text-[#172232] select-all" dir="ltr">${escapeHtml(it.account)}</div>
+                                    ${it.note ? `<div class="text-[#5B6B82] mt-1">ملاحظة: ${escapeHtml(it.note)}</div>` : ''}
                                   </div>
                                 `).join('')}
                               </div>
-                            ` : ''}` : `<span class="text-xs text-stone-400">${hasItems ? 'محجوز — يُسلَّم بعد تأكيد الدفع' : (pending ? 'يُسلَّم بعد تأكيد الدفع' : '—')}</span>`}
+                            ` : ''}` : `<span class="text-xs text-[#8A97A8]">${hasItems ? 'محجوز — يُسلَّم بعد تأكيد الدفع' : (pending ? 'يُسلَّم بعد تأكيد الدفع' : '—')}</span>`}
                           </td>
-                          <td class="py-3.5 px-4 text-xs text-stone-500 whitespace-nowrap">${dateStr}</td>
+                          <td class="py-3.5 px-4 text-xs text-[#6B7A90] whitespace-nowrap">${dateStr}</td>
                         </tr>
                         ${isAdmin && pending ? `
                         <tr class="bg-amber-50/60">
@@ -920,20 +1027,20 @@
         </div>
         ${isAdmin && settlements.length ? `
         <div class="card overflow-hidden mt-5">
-          <div class="px-5 py-4 border-b border-stone-200">
+          <div class="px-5 py-4 border-b border-[#E1E8F4]">
             <h2 class="font-bold text-sm">سجل التسويات (${settlements.length})</h2>
-            <p class="text-xs text-stone-500 mt-0.5">كل تسوية صفّرت الدين المستحق بتاريخها</p>
+            <p class="text-xs text-[#6B7A90] mt-0.5">كل تسوية صفّرت الدين المستحق بتاريخها</p>
           </div>
-          <div class="divide-y divide-stone-200">
+          <div class="divide-y divide-[#E1E8F4]">
             ${settlements.map(st => `
               <div class="px-5 py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
                 <div>
                   <span class="mono text-xs font-medium">${st.id}</span>
-                  <span class="text-xs text-stone-500"> — ${st.ordersCount} طلب</span>
+                  <span class="text-xs text-[#6B7A90]"> — ${st.ordersCount} طلب</span>
                 </div>
                 <div class="flex items-center gap-3">
                   <span class="mono text-xs font-bold text-green-700">${formatIQD(st.amount)}</span>
-                  <span class="text-xs text-stone-500">${new Date(st.settledAt).toLocaleString('ar-IQ', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  <span class="text-xs text-[#6B7A90]">${new Date(st.settledAt).toLocaleString('ar-IQ', { dateStyle: 'short', timeStyle: 'short' })}</span>
                 </div>
               </div>
             `).join('')}
@@ -947,12 +1054,12 @@
       lastDeliveredItems = order.items || [];
       document.getElementById('deliveryMeta').textContent = `${order.id} • ${order.productName} (×${order.quantity})`;
       document.getElementById('deliveryItemsList').innerHTML = lastDeliveredItems.map(it => `
-        <div class="bg-stone-50 border border-stone-200 rounded-lg p-3 space-y-1">
+        <div class="bg-[#F7F9FD] border border-[#E1E8F4] rounded-lg p-3 space-y-1">
           <div class="flex items-center justify-between gap-2">
-            <code class="mono text-xs text-stone-900 break-all" dir="ltr">${escapeHtml(it.account)}</code>
+            <code class="mono text-xs text-[#172232] break-all" dir="ltr">${escapeHtml(it.account)}</code>
             <button onclick="copyText('${escapeJs(it.account)}')" class="btn-secondary px-2.5 py-1 text-xs shrink-0">نسخ</button>
           </div>
-          ${it.note ? `<div class="text-xs text-stone-600 pt-1 border-t border-stone-200">ملاحظة: ${escapeHtml(it.note)}</div>` : ''}
+          ${it.note ? `<div class="text-xs text-[#5B6B82] pt-1 border-t border-[#E1E8F4]">ملاحظة: ${escapeHtml(it.note)}</div>` : ''}
         </div>
       `).join('');
       document.getElementById('deliveryModal').classList.remove('hidden');
@@ -979,15 +1086,15 @@
       document.getElementById('currentStockCount').textContent = stock.length;
       document.getElementById('currentStockList').innerHTML = stock.length
         ? stock.map((s, idx) => `
-            <div class="flex items-center justify-between bg-stone-50 border border-stone-200 rounded px-3 py-2 text-xs">
+            <div class="flex items-center justify-between bg-[#F7F9FD] border border-[#E1E8F4] rounded px-3 py-2 text-xs">
               <div class="min-w-0">
                 <div class="mono truncate" dir="ltr">${escapeHtml(s.account)}</div>
-                ${s.note ? `<div class="text-stone-500 text-[11px] truncate">${escapeHtml(s.note)}</div>` : ''}
+                ${s.note ? `<div class="text-[#6B7A90] text-[11px] truncate">${escapeHtml(s.note)}</div>` : ''}
               </div>
               <button onclick="removeStockItem(${idx})" class="text-red-700 hover:underline mr-3 shrink-0">حذف</button>
             </div>
           `).join('')
-        : `<div class="text-xs text-stone-400">لا يوجد مخزون مضاف حالياً</div>`;
+        : `<div class="text-xs text-[#8A97A8]">لا يوجد مخزون مضاف حالياً</div>`;
     }
 
     async function submitAddStock() {
