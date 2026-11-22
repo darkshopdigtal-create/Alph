@@ -36,6 +36,7 @@ const defaultDB = {
       name: 'ChatGPT Plus',
       duration: 'شهر واحد',
       price: 14.50,
+      image: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg',
       defaultNote: 'حساب خاص - لا تقم بتغيير البريد الإلكتروني',
       stock: [
         { account: 'gpt01@alphadigital.iq:Pass#9921', note: 'حساب خاص - ضمان 28 يوم' },
@@ -47,6 +48,7 @@ const defaultDB = {
       name: 'Canva Pro',
       duration: 'سنة كاملة',
       price: 4.00,
+      image: 'https://cdn.jsdelivr.net/npm/simple-icons@13/icons/canva.svg',
       defaultNote: 'دعوة فريق رسمية على إيميل العميل',
       stock: [
         { account: 'https://canva.com/brand/join?token=AD9912X', note: 'رابط دعوة مباشر' }
@@ -57,6 +59,7 @@ const defaultDB = {
       name: 'CapCut Pro',
       duration: 'شهر واحد',
       price: 5.50,
+      image: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Capcut-icon.svg',
       defaultNote: 'تسجيل دخول مباشر عبر البريد وكلمة المرور',
       stock: [
         { account: 'cap01@alphadigital.iq:Cap@7741', note: 'جهازين كحد أقصى' }
@@ -77,6 +80,7 @@ function readDB() {
     if (!Array.isArray(data.settlements)) data.settlements = [];
     if (!data.paymentSettings) data.paymentSettings = { cardType: 'MasterCard', cardNumber: '', cardHolder: '' };
     if (!Array.isArray(data.customers)) data.customers = [];
+    (data.products || []).forEach(p => { if (typeof p.image !== 'string') p.image = ''; });
     if (data.apiSettings) delete data.apiSettings;
     (data.orders || []).forEach(o => {
       if (!o.status) o.status = (o.items && o.items.length) ? 'confirmed' : 'pending_payment';
@@ -206,6 +210,7 @@ app.get('/api/portal/state', authMiddleware(), (req, res) => {
     duration: p.duration,
     price: p.price,
     defaultNote: p.defaultNote || '',
+    image: p.image || '',
     stockCount: p.stock.length,
     stock: isAdmin ? p.stock : undefined
   }));
@@ -216,7 +221,9 @@ app.get('/api/portal/state', authMiddleware(), (req, res) => {
   }
   const safeOrders = orders.map(o => ({
     ...o,
-    receiptImage: (isAdmin || o.buyer === req.user.username) ? o.receiptImage : undefined
+    receiptImage: (isAdmin || o.buyer === req.user.username) ? o.receiptImage : undefined,
+    // Reserved accounts stay hidden from the buyer until the admin confirms payment
+    items: (isAdmin || o.status === 'confirmed') ? (o.items || []) : []
   }));
 
   res.json({
@@ -253,8 +260,16 @@ app.post('/api/portal/orders', authMiddleware(), (req, res) => {
     return res.status(400).json({ success: false, error: 'المخزون المتوفر غير كافٍ' });
   }
 
+  // Reserve the accounts immediately so two buyers can never pay for the same stock.
+  // They leave available stock now and are returned automatically if the order is rejected.
+  const reservedItems = product.stock.splice(0, qty);
+  let orderId = '';
+  do {
+    orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+  } while (db.orders.some(o => o.id === orderId));
+
   const order = {
-    id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+    id: orderId,
     productId: product.id,
     productName: product.name,
     duration: product.duration,
@@ -266,18 +281,18 @@ app.post('/api/portal/orders', authMiddleware(), (req, res) => {
     status: 'pending_payment',
     receiptImage,
     settled: false,
-    items: [],
+    items: reservedItems,
     createdAt: new Date().toISOString()
   };
 
   db.orders.unshift(order);
   writeDB(db);
-  res.json({ success: true, order: { ...order, receiptImage: undefined } });
+  res.json({ success: true, order: { ...order, receiptImage: undefined, items: [] } });
 });
 
 // Admin: Create or Update Product
 app.post('/api/admin/products', authMiddleware('admin'), (req, res) => {
-  const { id, name, duration, price, defaultNote } = req.body || {};
+  const { id, name, duration, price, defaultNote, image } = req.body || {};
   if (!name || !duration || isNaN(parseFloat(price))) {
     return res.status(400).json({ success: false, error: 'يرجى إكمال بيانات المنتج بشكل صحيح' });
   }
@@ -290,6 +305,7 @@ app.post('/api/admin/products', authMiddleware('admin'), (req, res) => {
     existing.duration = String(duration).trim();
     existing.price = Number(parseFloat(price).toFixed(2));
     existing.defaultNote = String(defaultNote || '').trim();
+    existing.image = String(image || '').trim();
   } else {
     db.products.push({
       id: 'prod_' + Date.now(),
@@ -297,6 +313,7 @@ app.post('/api/admin/products', authMiddleware('admin'), (req, res) => {
       duration: String(duration).trim(),
       price: Number(parseFloat(price).toFixed(2)),
       defaultNote: String(defaultNote || '').trim(),
+      image: String(image || '').trim(),
       stock: []
     });
   }
@@ -308,6 +325,10 @@ app.post('/api/admin/products', authMiddleware('admin'), (req, res) => {
 // Admin: Delete Product
 app.delete('/api/admin/products/:id', authMiddleware('admin'), (req, res) => {
   const db = readDB();
+  const hasPending = db.orders.some(o => o.productId === req.params.id && o.status === 'pending_payment');
+  if (hasPending) {
+    return res.status(400).json({ success: false, error: 'لا يمكن حذف المنتج — توجد طلبات معلقة بانتظار تأكيد الدفع' });
+  }
   db.products = db.products.filter(p => p.id !== req.params.id);
   writeDB(db);
   res.json({ success: true });
@@ -403,10 +424,10 @@ app.post('/api/admin/orders/:id/confirm', authMiddleware('admin'), (req, res) =>
     return res.status(400).json({ success: false, error: 'هذا الطلب ليس بانتظار التأكيد' });
   }
   const product = db.products.find(p => p.id === order.productId);
-  if (!product || product.stock.length < order.quantity) {
-    return res.status(400).json({ success: false, error: 'المخزون المتوفر غير كافٍ لتسليم هذا الطلب' });
+  if (!product) {
+    return res.status(400).json({ success: false, error: 'المنتج غير موجود' });
   }
-  order.items = product.stock.splice(0, order.quantity);
+  // The accounts were already reserved for this order when it was created
   order.status = 'confirmed';
   order.settled = true;
   order.settledAt = new Date().toISOString();
@@ -422,6 +443,11 @@ app.post('/api/admin/orders/:id/reject', authMiddleware('admin'), (req, res) => 
   if (!order) return res.status(404).json({ success: false, error: 'الطلب غير موجود' });
   if (order.status !== 'pending_payment') {
     return res.status(400).json({ success: false, error: 'هذا الطلب ليس بانتظار التأكيد' });
+  }
+  // Return the reserved accounts to available stock
+  const product = db.products.find(p => p.id === order.productId);
+  if (product && order.items && order.items.length) {
+    product.stock.push(...order.items);
   }
   order.status = 'rejected';
   writeDB(db);
